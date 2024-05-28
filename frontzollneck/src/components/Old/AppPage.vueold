@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import { useAuthStore } from '../../stores/authStore';
+import { useFunctionsStore } from '../../stores/funtionsStore'
+
+const funtionsStore = useFunctionsStore();
+
+</script>
+
+<template>
+    <div class="flex flex-column align-items-center justify-content-center gap-4 p-2" style="height: 90vh;">
+        <Button label="Abmelden" severity="success" icon="pi pi-ban" @click="funtionsStore.logOut()"></Button>
+        <Button severity="warning" label="Audio Datein Formatiren" @click="funtionsStore.goToFileAudio()"></Button>
+        <Button severity="success" label="Home" icon="pi pi-home" @click="funtionsStore.goToHome()"></Button>
+    </div>
+</template>
+    
+<style scoped>
+</style>
+
+    

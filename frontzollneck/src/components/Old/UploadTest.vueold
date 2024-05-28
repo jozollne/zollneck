@@ -1,0 +1,25 @@
+<template>
+    <div class="card">
+        <Toast />
+        <FileUpload chooseLabel="Datei auswählen" uploadLabel="Hochladen" cancelLabel="Abbrechen" name="file" url="https://zollneck.de/api/uploadtest/upload" @upload="onUpload"
+            @before-send="onBeforeSend" :multiple="false" accept="video/*" :maxFileSize="1000000000">
+            <template #empty>
+                <p>Zeih eine Datei hier rein oder drücke hier um eine Datei auszuwählen!</p>
+            </template>
+        </FileUpload>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { useToast } from 'primevue/usetoast';
+
+const toast = useToast();
+
+const onBeforeSend = (event: any) => {
+    event.xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('userToken')}`);
+};
+
+const onUpload = () => {
+    toast.add({ severity: 'success', summary: 'Upload erflogreich!', detail: 'Die Datei wurde erfolgreich hochgeladen!', life: 2000 });
+};
+</script>

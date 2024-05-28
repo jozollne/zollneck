@@ -1,0 +1,40 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useAuthStore } from './stores/authStore';
+import { useFunctionsStore } from './stores/funtionsStore';
+import { useRoute, type RouteRecordName } from 'vue-router';
+
+const functionsStore = useFunctionsStore();
+const authStore = useAuthStore();
+const route = useRoute();
+
+const username = computed(() => {
+  return localStorage.getItem('userAccount') || '';
+});
+
+const buttonSeverity = (routeName: RouteRecordName | null | undefined) => route.name === routeName ? 'success' : 'default';
+</script>
+
+<template>
+  <div class="flex flex-row flex-wrap justify-content-between">
+    <a href="https://zollneck.de/">
+      <img src="/Logo mit Text.png" class="hidden md:flex max-w-15rem p-2">
+      <img src="/Logo mit Text.png" class="flex md:hidden max-w-15rem p-2">
+    </a>
+    <div v-if="authStore.isAuthenticated" class="flex gap-3 p-2">
+      <Button :severity="buttonSeverity('audio')" label="Formatiren" icon="pi pi-youtube"
+        @click="functionsStore.goToFormatAudio()"></Button>
+    </div>
+    <div class="flex gap-3 p-2">
+      <Button :severity="buttonSeverity('auth')" v-if="!authStore.isAuthenticated" icon="pi pi-user"
+        @click="functionsStore.goToLogin()"></Button>
+      <!--       <Button :severity="buttonSeverity('register')" v-if="!authStore.isAuthenticated" icon="pi pi-plus"
+        label="Regristrieren" @click="functionsStore.goToRegister()"></Button> -->
+        <Button v-if="authStore.isAuthenticated" severity="danger" icon="pi pi-power-off" :label="username" @click="functionsStore.logOut()"></Button>
+      <Button :severity="buttonSeverity('home')" icon="pi pi-home" @click="functionsStore.goToHome()"></Button>
+    </div>
+  </div>
+  <RouterView />
+</template>
+
+<style scoped></style>
