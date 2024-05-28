@@ -1,4 +1,6 @@
 files/
 dist/
+node_modules/
 frontzollneck/dist/
 frontzollneck/files/
+frontzollneck/node_modules/
