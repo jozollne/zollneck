@@ -190,8 +190,8 @@ const konvertorItems = computed(() => {
     });
     
     items.push({
-      label: 'Nordschleife',
-      icon: 'pi pi-check-square',
+      label: 'Downloads',
+      icon: 'pi pi-cloud-download',
       command: () => {
         functionsStore.goToDownload();
       }

@@ -46,34 +46,53 @@ export class FormatFileService {
     }
   }
 
-  async getFilePath(fileId: string): Promise<{ filePath: string, filename: string }> {
+async getFilePath(fileId: string): Promise<{ filePath: string, filename: string }> {
+  if (this.fileMap.get(fileId)) {
     const filename = this.fileMap.get(fileId);
     const tempDir = '/media/tempfiles';
     const files = fs.readdirSync(tempDir);
     const file = files.find(f => f.startsWith(fileId));
     const filePath = file ? path.join(tempDir, file) : null;
-    if (!filePath || !fs.existsSync(filePath)) {
-      throw new HttpException('Datei wurde nicht gefunden.', HttpStatus.NOT_FOUND);
-    }
     return { filePath, filename };
-  }
+  } else {
+    const filesDirPath = "/home/jozollne/files/";
 
-  async deleteFile(fileId: string): Promise<{ result: boolean }> {
-    const tempDir = '/media/tempfiles';
-    const files = fs.readdirSync(tempDir);
-    if (files.find(f => f.startsWith(fileId))) {
-      const file = files.find(f => f.startsWith(fileId));
-      const filePath = file ? path.join(tempDir, file) : null;
-      try {
-        fs.promises.unlink(filePath);
-        const result = true;
-        return { result }
-      } catch (error) {
-        throw new HttpException(`Datei konnte nicht vom Server gelöscht werden: ${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    try {
+      const files = await fs.promises.readdir(filesDirPath);
+      const file = files.find(f => f === fileId);
+      if (file) {
+        const filePath = path.join(filesDirPath, file);
+        console.log(`File ${filePath} found!`);
+        return { filePath, filename: fileId };
+      } else {
+        throw new HttpException('Datei wurde nicht gefunden.', HttpStatus.NOT_FOUND);
       }
-    } else {
-      throw new HttpException(`Datei konnte nicht vom Server gelöscht werden`, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (err) {
+      console.error('Error getting directory information.', err);
+      throw new HttpException('Fehler beim Zugriff auf das Verzeichnis.', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+}
 
+  async deleteFile(fileId: string): Promise < { result: boolean } > {
+  const tempDir = '/media/tempfiles';
+  const files = fs.readdirSync(tempDir);
+  if(files.find(f => f.startsWith(fileId))) {
+  const file = files.find(f => f.startsWith(fileId));
+  const filePath = file ? path.join(tempDir, file) : null;
+  try {
+    fs.promises.unlink(filePath);
+    const result = true;
+    return { result }
+  } catch (error) {
+    throw new HttpException(`Datei konnte nicht vom Server gelöscht werden: ${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+} else {
+  throw new HttpException(`Datei konnte nicht vom Server gelöscht werden`, HttpStatus.INTERNAL_SERVER_ERROR);
+}
+  }
+
+  async downloadFile(fileId: string) {
+
+}
 }
