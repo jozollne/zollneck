@@ -22,6 +22,8 @@ import Button from 'primevue/button';
 const files = ref([
   { name: 'Nordschleife BeamNG', path: '/files/ks_nord_v20231124_v2.zip', size: '494,37 MB' },
   { name: 'Brücke Viedos', path: '/files/DJI_0170.zip', size: '5,05 GB' },
+  { name: 'Bett Viedos', path: '/files/DJI_0169.zip', size: '657,58 MB' },
+  { name: 'Volkswagen_Tiguan.zip', path: '/files/Volkswagen_Tiguan.zip', size: '657,58 MB' },
 ]);
 
 const downloadFile = (filePath: string, fileName: string) => {
