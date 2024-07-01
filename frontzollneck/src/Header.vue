@@ -190,7 +190,7 @@ const konvertorItems = computed(() => {
     });
     
     items.push({
-      label: 'Downloads',
+      label: 'Cloud',
       icon: 'pi pi-cloud-download',
       command: () => {
         functionsStore.goToDownload();

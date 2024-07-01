@@ -5,6 +5,7 @@ import { Users } from './auth/entities/users.entity';
 import { FormatFileModule } from './format-file/format-file.module';
 import { UploadtestModule } from './uploadtest/uploadtest.module';
 import { YoutubeModule } from './youtube/youtube.module';
+import { CloudModule } from './cloud/cloud.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { YoutubeModule } from './youtube/youtube.module';
     FormatFileModule,
     UploadtestModule,
     YoutubeModule,
+    CloudModule,
   ],
 
 })

@@ -1,12 +1,16 @@
 <template>
   <div class="p-d-flex p-jc-center p-ai-center pt-2">
     <DataTable :value="files" class="p-col-10">
-      <Column field="name" header="Dateiname"></Column>
-      <Column field="size" header="Größe"></Column>
+      <template #header>
+        <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+          <span class="text-xl text-900 font-bold"> Ordner: {{ dir }} </span>
+          <Button icon="pi pi-upload" rounded raised label="Hochladen" />
+        </div>
+      </template>
+      <Column field="name" header="Filename"></Column>
       <Column header="Download">
-        <template #body="slotProps">
-          <Button @click="downloadFile(slotProps.data.path, slotProps.data.name)" label="Download"
-            icon="pi pi-download"></Button>
+        <template #body="{ data }">
+          <Button @click="downloadFile(data.name)" label="Download" icon="pi pi-download"></Button>
         </template>
       </Column>
     </DataTable>
@@ -14,24 +18,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
+import { useCloudStore } from '@/stores/CloudStore';
 
-const files = ref([
-  { name: 'Nordschleife BeamNG', path: '/files/ks_nord_v20231124_v2.zip', size: '494,37 MB' },
-  { name: 'Brücke Viedos', path: '/files/DJI_0170.zip', size: '5,05 GB' },
-  { name: 'Bett Viedos', path: '/files/DJI_0169.zip', size: '657,58 MB' },
-  { name: 'Volkswagen_Tiguan.zip', path: '/files/Volkswagen_Tiguan.zip', size: '657,58 MB' },
-]);
+const cloudStore = useCloudStore();
+const dir = ref("/")
+const files = ref<{ name: string, path: string }[]>([]);
 
-const downloadFile = (filePath: string, fileName: string) => {
-  const link = document.createElement('a');
-  link.href = filePath;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+onMounted(async () => {
+  try {
+    const fileList = await cloudStore.getFiles();
+    files.value = fileList;
+  } catch (error) {
+    console.error('Fehler beim Laden der Dateien:', error);
+  }
+});
+
+const downloadFile = async (fileName: string) => {
+    try {
+        const response = await cloudStore.downloadFile(fileName);
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', response.headers['content-disposition']);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (error) {
+
+    }
 };
 </script>
