@@ -22,18 +22,25 @@ export class CloudService {
     }
   }
 
-  async getFiles(): Promise<{ name: string, path: string }[]> {
+  async getFiles(): Promise<{ name: string, path: string, size: number, created: Date }[]> {
     const directoryPath = '/media/filesystem/';
     try {
       const files = fs.readdirSync(directoryPath);
-      return files.map(file => ({
-        name: file,
-        path: path.join(directoryPath, file)
-      }));
+      return files.map(file => {
+        const filePath = path.join(directoryPath, file);
+        const fileStats = fs.statSync(filePath);
+        return {
+          name: file,
+          path: filePath,
+          size: fileStats.size,
+          created: fileStats.birthtime,
+        };
+      });
     } catch (err) {
       throw new HttpException('Fehler beim Lesen des Verzeichnisses', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
 
   async getFilePath(fileName: string): Promise<{ filePath: string }> {
       const tempDir = '/media/filesystem';

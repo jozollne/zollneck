@@ -25,7 +25,9 @@
             :auto="true" chooseLabel="Hochladen" :customUpload="true" @select="onUpload" />
         </div>
       </template>
-      <Column field="name" header="Filename"></Column>
+      <Column field="name" header="Dateiname"></Column>
+      <Column field="size" header="Größe"></Column>
+      <Column field="created" header="Erstellt"></Column>
       <Column header="Download">
         <template #body="{ data }">
           <Button @click="downloadFile(data.name)" label="Download" icon="pi pi-download"></Button>
@@ -48,7 +50,7 @@ const toast = useToast();
 const toastMessage = ref("");
 const cloudStore = useCloudStore();
 const dir = ref("/")
-const files = ref<{ name: string, path: string }[]>([]);
+const files = ref<{ name: string, path: string, size: string, created: Date }[]>([]);
 const fileUpload: Ref = ref(null);
 const uploadProgress = ref();
 const visible = ref(false);
@@ -107,8 +109,31 @@ const getFiles = async () => {
   try {
     const fileList = await cloudStore.getFiles();
     files.value = fileList;
+    files.value.forEach(element => {
+      element.size = formatBytes(Number(element.size))
+    });
   } catch (error) {
     console.error('Fehler beim Laden der Dateien:', error);
   }
 }
+
+const formatBytes = (bytes: number) => {
+        const TB = BigInt(1000000000000);
+        const GB = BigInt(1000000000);
+        const MB = BigInt(1000000);
+        const KB = BigInt(1000);
+
+        if (bytes >= TB) {
+            return (Number(bytes) / Number(TB)).toFixed(2) + ' TB';
+        } else if (bytes >= GB) {
+            return (Number(bytes) / Number(GB)).toFixed(2) + ' GB';
+        } else if (bytes >= MB) {
+            return (Number(bytes) / Number(MB)).toFixed(2) + ' MB';
+        } else if (bytes >= KB) {
+            return (Number(bytes) / Number(KB)).toFixed(2) + ' KB';
+        } else {
+            return bytes + ' Bytes';
+        }
+    };
+
 </script>
