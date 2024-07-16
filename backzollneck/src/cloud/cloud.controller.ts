@@ -15,7 +15,7 @@ export class CloudController {
   }))
   async uploadFile(@UploadedFiles() files: Array<Express.Multer.File>) {
     const result = await this.cloudService.uploadFile(files)
-    return result;
+    return result.fileName ;
   }
 
   @Get('files')
@@ -26,7 +26,6 @@ export class CloudController {
 
   @Get('download/:fileName')
   async downloadFile(@Param('fileName') fileName: string, @Res() res: Response) {
-    console.log(fileName)
     try {
       const { filePath } = await this.cloudService.getFilePath(fileName);
       res.setHeader('Content-Disposition', fileName);
