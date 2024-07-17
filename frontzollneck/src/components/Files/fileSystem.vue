@@ -22,7 +22,7 @@
         <div class="flex flex-wrap align-items-center justify-content-between gap-2">
           <span class="text-xl text-900 font-bold"> Ordner: {{ dir }} </span>
           <FileUpload ref="fileUpload" mode="basic" name="demo[]" :maxFileSize="10000000000" @upload="onUpload"
-            :auto="true" chooseLabel="Hochladen" :customUpload="true" @select="onUpload" />
+            :auto="true" chooseLabel="Hochladen" :customUpload="true" @select="onUpload" :multiple="true"/>
         </div>
       </template>
       <Column field="name" header="Dateiname"></Column>
@@ -30,33 +30,51 @@
       <Column field="created" header="Erstellt"></Column>
       <Column header="Download">
         <template #body="{ data }">
-          <Button @click="downloadFile(data.name)" label="Download" icon="pi pi-download"></Button>
+          <Button v-if="!data.downloading" @click="downloadFile(data)" label="Download" icon="pi pi-download"></Button>
+          <ProgressBar v-if="data.downloading" :value="downloadProgress" class="mb-3"></ProgressBar>
         </template>
       </Column>
     </DataTable>
   </div>
+
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, type Ref } from 'vue';
+import { onMounted, onUnmounted, ref, type Ref } from 'vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import { useCloudStore } from '@/stores/CloudStore';
 import { useToast } from "primevue/usetoast";
 import { HttpStatusCode } from 'axios';
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
+
+let client: Socket;
 
 const toast = useToast();
 const toastMessage = ref("");
 const cloudStore = useCloudStore();
 const dir = ref("/")
-const files = ref<{ name: string, path: string, size: string, created: Date }[]>([]);
+const files = ref<{ name: string, path: string, size: string, created: Date, downloading: boolean }[]>([]);
 const fileUpload: Ref = ref(null);
 const uploadProgress = ref();
 const visible = ref(false);
+const downloadProgress = ref(0);
 
 onMounted(async () => {
+  client = io('wss://zollneck.de', { path: '/socket.io', transports: ['websocket'] });
+    client.on('downloadProgress', (progress: number) => {
+      downloadProgress.value = Math.round(progress);
+    });
+
   getFiles()
+});
+
+onUnmounted(() => {
+    if (client) {
+        client.disconnect();
+    }
 });
 
 const onUpload = () => {
@@ -90,9 +108,15 @@ const onUpload = () => {
   }
 };
 
-const downloadFile = async (fileName: string) => {
+const downloadFile = async (file: { downloading: boolean; name: string; }) => {
+  if (!client || !client.id) {
+        toast.add({ severity: 'error', summary: 'Fehler', detail: 'Socket-Verbindung nicht hergestellt', life: 3000 });
+        return;
+    }
   try {
-    const response = await cloudStore.downloadFile(fileName);
+    file.downloading = true;
+    downloadProgress.value = 0;
+    const response = await cloudStore.downloadFile(file.name, client.id);
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
@@ -101,7 +125,9 @@ const downloadFile = async (fileName: string) => {
     link.click();
     document.body.removeChild(link);
   } catch (error) {
-
+    console.error('Fehler beim Herunterladen der Datei:', error);
+  } finally {
+    file.downloading = false;
   }
 };
 
@@ -110,7 +136,8 @@ const getFiles = async () => {
     const fileList = await cloudStore.getFiles();
     files.value = fileList;
     files.value.forEach(element => {
-      element.size = formatBytes(Number(element.size))
+      element.size = formatBytes(Number(element.size));
+      element.downloading = false;
     });
   } catch (error) {
     console.error('Fehler beim Laden der Dateien:', error);

@@ -2,7 +2,7 @@ import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, Conne
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway()
-export class YoutubeGateway implements OnGatewayConnection {
+export class SocketGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 

@@ -4,7 +4,6 @@ import { ref } from 'vue';
 
 export const useCloudStore = defineStore('cloud', {
     state: () => ({
-
     }),
     actions: {
         async getFiles() {
@@ -20,19 +19,21 @@ export const useCloudStore = defineStore('cloud', {
             }
         },
 
-        async downloadFile(fileName: string) {
+        async downloadFile(fileName: string, clientId: string) {
             try {
-                const response = await axios.get(`https://zollneck.de/api/cloud/download/${fileName}`, {
-                    responseType: 'blob',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                    }
-                });
-                return response;
+              const response = await axios.post(`https://zollneck.de/api/cloud/download/${fileName}`, {
+                clientId: clientId
+              }, {
+                responseType: 'blob',
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                }
+              });
+              return response;
             } catch (error) {
-                throw error;
+              throw error;
             }
-        },
+          },
 
         async uploadFiles(formData: FormData, progressCallback: (percentCompleted: number) => void) {
             try {

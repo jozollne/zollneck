@@ -4,6 +4,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
+import { createReadStream } from 'fs';
+import { SocketGateway } from 'src/socket.gateway';
+import { Response } from 'express';
 
 @Injectable()
 export class CloudService {
@@ -46,5 +49,25 @@ export class CloudService {
       const tempDir = '/media/filesystem';
       const filePath = path.join(tempDir, fileName);
       return { filePath };
+  }
+
+  async downloadFile(fileName: string, res: Response, clientId: string, socketGateway: SocketGateway) {
+    const { filePath } = await this.getFilePath(fileName);
+    const fileSize = fs.statSync(filePath).size;
+    let downloaded = 0;
+
+    res.setHeader('Content-Disposition', fileName);
+
+    const readStream = createReadStream(filePath);
+    readStream.on('data', (chunk) => {
+      downloaded += chunk.length;
+      const progress = (downloaded / fileSize) * 100;
+      socketGateway.handleDownloadProgress(clientId, progress);
+    });
+
+    readStream.pipe(res);
+    readStream.on('end', () => {
+      socketGateway.handleDownloadProgress(clientId, 100);
+    });
   }
 }

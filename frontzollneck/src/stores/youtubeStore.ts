@@ -9,7 +9,6 @@ export const useYoutubeStore = defineStore('upload', {
     }),
     actions: {
         async downloadFileFromYoutube(url: string, clientId: string, format: boolean) {
-            console.log(format)
             const response = await axios.post(`https://zollneck.de/api/youtube/downloadFromYoutube`, {
                 url: url,
                 clientId: clientId,

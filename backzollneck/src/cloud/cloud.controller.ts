@@ -3,10 +3,15 @@ import { CloudService } from './cloud.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Response } from 'express';
+import { SocketGateway } from 'src/socket.gateway';
+import { Headers } from '@nestjs/common';
 
 @Controller('cloud')
 export class CloudController {
-  constructor(private readonly cloudService: CloudService) {}
+  constructor(
+    private readonly cloudService: CloudService,
+    private readonly socketGateway: SocketGateway
+  ) { }
 
   @Post('uploadFile')
 /*   @UseGuards(JwtAuthGuard)
@@ -15,7 +20,7 @@ export class CloudController {
   }))
   async uploadFile(@UploadedFiles() files: Array<Express.Multer.File>) {
     const result = await this.cloudService.uploadFile(files)
-    return result.fileName ;
+    return result.fileName;
   }
 
   @Get('files')
@@ -24,12 +29,10 @@ export class CloudController {
     return this.cloudService.getFiles();
   }
 
-  @Get('download/:fileName')
-  async downloadFile(@Param('fileName') fileName: string, @Res() res: Response) {
+  @Post('download/:fileName')
+  async downloadFile(@Param('fileName') fileName: string, @Res() res: Response, @Body('clientId') clientId: string) {
     try {
-      const { filePath } = await this.cloudService.getFilePath(fileName);
-      res.setHeader('Content-Disposition', fileName);
-      res.sendFile(filePath);
+      await this.cloudService.downloadFile(fileName, res, clientId, this.socketGateway);
     } catch (error) {
       throw new HttpException('Fehler beim Herunterladen der Datei: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

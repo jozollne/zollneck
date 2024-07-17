@@ -5,18 +5,18 @@ import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { promisify } from 'util';
 import * as childProcess from 'child_process';
-import { YoutubeGateway } from './youtube.gateway';
+import { SocketGateway } from '../socket.gateway';
 
 const exec = promisify(childProcess.exec);
 
 @Injectable()
 export class YoutubeService {
-  constructor(private youtubeGateway: YoutubeGateway) { }
+  constructor(private socketGateway: SocketGateway) { }
 
   private fileMap = new Map<string, string>();
 
   async downloadVideoFromYoutube(url: string, clientSocketId: any, format: boolean): Promise<{ fileId: string }> {
-    this.youtubeGateway.handleDownloadProgress(clientSocketId, 0);
+    this.socketGateway.handleDownloadProgress(clientSocketId, 0);
     if (!url || typeof url !== 'string' || !url.trim()) {
       throw new Error('Ungültige URL');
     }
@@ -42,13 +42,13 @@ export class YoutubeService {
       videoStream.on('progress', (_, downloaded, total) => {
         videoDownloaded = downloaded;
         const progress = Math.round((videoDownloaded + audioDownloaded) * 50 / (total));
-        this.youtubeGateway.handleDownloadProgress(clientSocketId, progress);
+        this.socketGateway.handleDownloadProgress(clientSocketId, progress);
       });
 
       audioStream.on('progress', (_, downloaded, total) => {
         audioDownloaded = downloaded;
         const progress = Math.round((videoDownloaded + audioDownloaded) * 50 / (total));
-        this.youtubeGateway.handleDownloadProgress(clientSocketId, progress);
+        this.socketGateway.handleDownloadProgress(clientSocketId, progress);
       });
 
       await Promise.all([
@@ -112,7 +112,7 @@ export class YoutubeService {
   }
 
   testProgressUpdate(clientId: string) {
-    this.youtubeGateway.handleDownloadProgress(clientId, 50);
+    this.socketGateway.handleDownloadProgress(clientId, 50);
   }
 
 }
