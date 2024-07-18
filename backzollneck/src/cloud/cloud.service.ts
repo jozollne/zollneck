@@ -70,5 +70,23 @@ export class CloudService {
       socketGateway.handleDownloadProgress(clientId, { fileName, progress: 100 });
     });
   }
+
+  async deleteFile(fileId: string) {
+    const tempDir = '/media/filesystem';
+    const files = fs.readdirSync(tempDir);
+    console.log(fileId)
+    if (files.find(f => f.startsWith(fileId))) {
+      const file = files.find(f => f.startsWith(fileId));
+      const filePath = file ? path.join(tempDir, file) : null;
+      try {
+        fs.promises.unlink(filePath);
+        return true
+      } catch (error) {
+        throw new HttpException(`Datei konnte nicht vom Server gelöscht werden: ${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    } else {
+      throw new HttpException(`Datei konnte nicht vom Server gelöscht werden`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }
 

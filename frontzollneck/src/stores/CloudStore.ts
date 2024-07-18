@@ -36,6 +36,7 @@ export const useCloudStore = defineStore('cloud', {
           },
 
         async uploadFiles(formData: FormData, progressCallback: (percentCompleted: number) => void) {
+            console.log(formData)
             try {
                 const response = await axios.post('https://zollneck.de/api/cloud/uploadFile', formData, {
                     headers: {
@@ -52,5 +53,18 @@ export const useCloudStore = defineStore('cloud', {
                 throw error;
             }
         },
+
+        async deleteFile(fileId: string) {
+            try {
+                const response = await axios.post(`https://zollneck.de/api/cloud/deleteFromServer/${fileId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                    }
+                });
+                return response.data;
+            } catch (error) {
+                throw error;
+            }
+        }
     },
 });

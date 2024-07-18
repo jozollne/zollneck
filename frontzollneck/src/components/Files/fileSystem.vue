@@ -1,6 +1,6 @@
 <template>
   <div class="p-d-flex p-jc-center p-ai-center pt-2">
-    <DataTable :value="files" class="p-col-10" showGridlines resizableColumns>
+    <DataTable :value="files" class="p-col-10" resizableColumns>
       <template #header>
         <div class="flex flex-wrap align-items-center justify-content-between gap-2">
           <span class="text-xl text-900 font-bold"> Ordner: {{ dir }} </span>
@@ -9,16 +9,21 @@
             :auto="true" chooseLabel="Hochladen" :customUpload="true" @select="onUpload" :multiple="true" />
         </div>
       </template>
-      <Column field="name" header="Dateiname"></Column>
-      <Column field="size" header="Größe"></Column>
-      <Column field="created" header="Erstellt"></Column>
-      <Column header="Download" :style="{ width: '300px' }">
+      <Column :style="{ width: '1100px' }" field="name" header="Dateiname" ></Column>
+      <Column :style="{ width: '110px' }" field="size" header="Größe"></Column>
+      <Column :style="{ width: '240px' }" field="created" header="Erstellt"></Column>
+      <Column :style="{ width: '170px' }">
         <template #body="{ data }">
           <div class="flex align-items-center justify-content-center" :style="{ height: '50px' }">
-            <Button v-if="!data.downloading && !data.uploading" @click="downloadFile(data)" label="Download"
+            <Button v-if="!data.downloading && !data.uploading" @click="onDownload(data)" label="Download"
               icon="pi pi-download" class="w-full"></Button>
             <ProgressBar v-else :value="data.progress" class="w-full"></ProgressBar>
           </div>
+        </template>
+      </Column>
+      <Column :style="{ width: '85px' }">
+        <template #body="{ data }">
+          <Button @click="onDelete(data.name)" icon="pi pi-trash" :disabled="data.downloading || data.uploading"></Button>
         </template>
       </Column>
     </DataTable>
@@ -46,15 +51,14 @@ const fileUpload: Ref = ref(null);
 const activeDownloadOrUpload = ref(false)
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-  const message = 'Are you sure you want to leave? Changes you made may not be saved.';
-  event.returnValue = message;
-  return message;
-};
-
-onMounted(async () => {
-  if (activeDownloadOrUpload) {
-    window.addEventListener('beforeunload', handleBeforeUnload);
+  if (activeDownloadOrUpload.value) {
+    const message = 'Bist du sicher das du neu laden möchtest? Deine Änderungen werden eventuell nicht gespeichert.';
+    event.returnValue = message;
+    return message;
   }
+};
+onMounted(async () => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
   client = io('wss://zollneck.de', { path: '/socket.io', transports: ['websocket'] });
   client.on('downloadProgress', (data: { fileName: string, progress: number }) => {
     const file = files.value.find(f => f.name === data.fileName);
@@ -66,13 +70,14 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  if (activeDownloadOrUpload) {
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-  }
+  window.removeEventListener('beforeunload', handleBeforeUnload);
   if (client) {
     client.disconnect();
   }
 });
+
+const test = () => {
+}
 
 const onUpload = () => {
   if (fileUpload.value) {
@@ -89,7 +94,8 @@ const onUpload = () => {
       };
       files.value.push(newFile);
       const formData = new FormData();
-      formData.append('file', file);
+      //encodeURIComponent(file.name) = umlaute im dateinamen korigieren
+      formData.append('file', file, encodeURIComponent(file.name));
       try {
         const response = await cloudStore.uploadFiles(formData, (percentCompleted) => {
           const fileInProgress = files.value.find(f => f.name === file.name && f.uploading);
@@ -117,7 +123,7 @@ const onUpload = () => {
   }
 };
 
-const downloadFile = async (file: { downloading: boolean; name: string; }) => {
+const onDownload = async (file: { downloading: boolean; name: string; }) => {
   if (!client || !client.id) {
     toast.add({ severity: 'error', summary: 'Fehler', detail: 'Socket-Verbindung nicht hergestellt', life: 3000 });
     return;
@@ -140,6 +146,23 @@ const downloadFile = async (file: { downloading: boolean; name: string; }) => {
     activeDownloadOrUpload.value = false;
   }
 };
+
+const onDelete = async (filename: string) => {
+  try {
+    const response = await cloudStore.deleteFile(filename)
+    if (response == true) {
+      toast.add({ severity: 'success', summary: filename + ' gelöscht', detail: 'Die Datei ' + filename + ' wurde erfolgreich gelöscht!', life: 3000 });
+    } else {
+      toast.add({ severity: 'error', summary: 'Löschen fehlgeschlagen', detail: 'Das Löschen der Datei ' + filename + ' ist fehlgeschlagen!', life: 3000 });
+    }
+  } catch(error) {
+    toast.add({ severity: 'error', summary: 'Unerwarteter Fehler', detail: error, life: 3000 });
+  } finally {
+    //Löscht die File auch aus dem lokalen array :)
+    files.value = files.value.filter(f => f.name !== filename);
+  }
+}
+
 
 const getFiles = async () => {
   try {

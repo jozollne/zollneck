@@ -19,6 +19,12 @@ export class CloudController {
     limits: { fileSize: 5000 * 1024 * 1024 }
   }))
   async uploadFile(@UploadedFiles() files: Array<Express.Multer.File>) {
+    //umlaute im dateinamen korigieren
+    files.forEach(file => {
+      file.originalname = decodeURIComponent(Buffer.from(file.originalname, 'latin1').toString('utf8'));
+    });
+
+    console.log(files)
     const result = await this.cloudService.uploadFile(files)
     return result.fileName;
   }
@@ -35,6 +41,16 @@ export class CloudController {
       await this.cloudService.downloadFile(fileName, res, clientId, this.socketGateway);
     } catch (error) {
       throw new HttpException('Fehler beim Herunterladen der Datei: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('deleteFromServer/:fileId')
+  async deleteFile(@Param('fileId') fileId: string) {
+    try {
+      const result = await this.cloudService.deleteFile(fileId);
+      return result;
+    } catch (error) {
+      console.log(error)
     }
   }
 }
