@@ -56,18 +56,19 @@ export class CloudService {
     const fileSize = fs.statSync(filePath).size;
     let downloaded = 0;
 
-    res.setHeader('Content-Disposition', fileName);
+    res.setHeader('Content-Disposition', `${fileName}`);
 
     const readStream = createReadStream(filePath);
     readStream.on('data', (chunk) => {
       downloaded += chunk.length;
       const progress = (downloaded / fileSize) * 100;
-      socketGateway.handleDownloadProgress(clientId, progress);
+      socketGateway.handleDownloadProgress(clientId, { fileName, progress });
     });
 
     readStream.pipe(res);
     readStream.on('end', () => {
-      socketGateway.handleDownloadProgress(clientId, 100);
+      socketGateway.handleDownloadProgress(clientId, { fileName, progress: 100 });
     });
   }
 }
+
