@@ -38,7 +38,7 @@ export const useYoutubeStore = defineStore('upload', {
         },
 
         async deleteFileFromServer(fileId: string) {
-            await axios.post(`https://zollneck.de/api/youtube/deleteFromServer/${fileId}`, {
+            await axios.delete(`https://zollneck.de/api/youtube/deleteFromServer/${fileId}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('userToken')}`
                 }

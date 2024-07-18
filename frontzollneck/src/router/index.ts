@@ -59,7 +59,7 @@ const router = createRouter({
       path: '/apps/download',
       name: 'download',
       component: download,
-      meta: { requiresAuth: false }
+      meta: { requiresAuth: true }
     },
   ]
 })

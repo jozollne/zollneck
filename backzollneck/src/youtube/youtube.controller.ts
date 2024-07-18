@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, UseGuards, HttpStatus, HttpException, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Res, UseGuards, HttpStatus, HttpException, Get, Param, Delete } from '@nestjs/common';
 import { YoutubeService } from './youtube.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Response } from 'express';
@@ -30,7 +30,8 @@ export class YoutubeController {
     }
   }
 
-  @Post('deleteFromServer/:fileId')
+  @Delete('deleteFromServer/:fileId')
+  @UseGuards(JwtAuthGuard)
   async deleteFile(@Param('fileId') fileId: string) {
     const result = await this.youtubeService.deleteFile(fileId);
     return result;

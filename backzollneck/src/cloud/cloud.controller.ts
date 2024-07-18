@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, UseInterceptors, UploadedFiles, Get, Param, Res, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, UseGuards, UseInterceptors, UploadedFiles, Get, Param, Res, Body, HttpException, HttpStatus, Delete } from '@nestjs/common';
 import { CloudService } from './cloud.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -14,8 +14,8 @@ export class CloudController {
   ) { }
 
   @Post('uploadFile')
-/*   @UseGuards(JwtAuthGuard)
- */  @UseInterceptors(FilesInterceptor('file', 20, {
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FilesInterceptor('file', 20, {
     limits: { fileSize: 5000 * 1024 * 1024 }
   }))
   async uploadFile(@UploadedFiles() files: Array<Express.Multer.File>) {
@@ -30,12 +30,13 @@ export class CloudController {
   }
 
   @Get('files')
-/*   @UseGuards(JwtAuthGuard)
- */  async getFiles() {
+  @UseGuards(JwtAuthGuard)
+  async getFiles() {
     return this.cloudService.getFiles();
   }
 
   @Post('download/:fileName')
+  @UseGuards(JwtAuthGuard)
   async downloadFile(@Param('fileName') fileName: string, @Res() res: Response, @Body('clientId') clientId: string) {
     try {
       await this.cloudService.downloadFile(fileName, res, clientId, this.socketGateway);
@@ -44,13 +45,15 @@ export class CloudController {
     }
   }
 
-  @Post('deleteFromServer/:fileId')
+  @Delete('deleteFromServer/:fileId')
+  @UseGuards(JwtAuthGuard)
   async deleteFile(@Param('fileId') fileId: string) {
-    try {
-      const result = await this.cloudService.deleteFile(fileId);
-      return result;
-    } catch (error) {
-      console.log(error)
-    }
+      try {
+          const result = await this.cloudService.deleteFile(fileId);
+          return result;
+      } catch (error) {
+          console.log(error)
+          throw new HttpException('File deletion failed', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
   }
 }

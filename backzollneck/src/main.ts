@@ -33,7 +33,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors({
     origin: ['https://zollneck.de', 'http://85.215.77.161:5173', 'http://85.215.77.161:5174'],
-    methods: 'GET,POST',
+    methods: 'GET,POST,DELETE,PUT,PATCH',
     allowedHeaders: 'Content-Type,Authorization',
     exposedHeaders: 'Content-Disposition',
   });

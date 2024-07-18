@@ -21,19 +21,19 @@ export const useCloudStore = defineStore('cloud', {
 
         async downloadFile(fileName: string, clientId: string) {
             try {
-              const response = await axios.post(`https://zollneck.de/api/cloud/download/${fileName}`, {
-                clientId: clientId
-              }, {
-                responseType: 'blob',
-                headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                }
-              });
-              return response;
+                const response = await axios.post(`https://zollneck.de/api/cloud/download/${fileName}`, {
+                    clientId: clientId
+                }, {
+                    responseType: 'blob',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                    }
+                });
+                return response;
             } catch (error) {
-              throw error;
+                throw error;
             }
-          },
+        },
 
         async uploadFiles(formData: FormData, progressCallback: (percentCompleted: number) => void) {
             console.log(formData)
@@ -54,9 +54,10 @@ export const useCloudStore = defineStore('cloud', {
             }
         },
 
-        async deleteFile(fileId: string) {
+        async deleteFile(fileName: string) {
+            console.log(localStorage.getItem('userToken'))
             try {
-                const response = await axios.post(`https://zollneck.de/api/cloud/deleteFromServer/${fileId}`, {
+                const response = await axios.delete(`https://zollneck.de/api/cloud/deleteFromServer/${fileName}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('userToken')}`
                     }
@@ -65,6 +66,6 @@ export const useCloudStore = defineStore('cloud', {
             } catch (error) {
                 throw error;
             }
-        }
+        }              
     },
 });

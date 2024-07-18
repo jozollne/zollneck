@@ -74,7 +74,6 @@ export class CloudService {
   async deleteFile(fileId: string) {
     const tempDir = '/media/filesystem';
     const files = fs.readdirSync(tempDir);
-    console.log(fileId)
     if (files.find(f => f.startsWith(fileId))) {
       const file = files.find(f => f.startsWith(fileId));
       const filePath = file ? path.join(tempDir, file) : null;
