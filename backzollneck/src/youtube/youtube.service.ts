@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import * as ytdl from 'ytdl-core';
+import * as ytdl from '@distube/ytdl-core';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,12 +11,12 @@ const exec = promisify(childProcess.exec);
 
 @Injectable()
 export class YoutubeService {
-  constructor(private socketGateway: SocketGateway) { }
+  constructor(private youtubeGateway: SocketGateway) { }
 
   private fileMap = new Map<string, string>();
 
   async downloadVideoFromYoutube(url: string, clientSocketId: any, format: boolean): Promise<{ fileId: string }> {
-    this.socketGateway.handleYoutubeDownloadProgress(clientSocketId, 0);
+    this.youtubeGateway.handleYoutubeDownloadProgress(clientSocketId, 0);
     if (!url || typeof url !== 'string' || !url.trim()) {
       throw new Error('Ungültige URL');
     }
@@ -41,14 +41,14 @@ export class YoutubeService {
 
       videoStream.on('progress', (_, downloaded, total) => {
         videoDownloaded = downloaded;
-        const progress = Math.round((videoDownloaded + audioDownloaded) * 50 / (total));
-        this.socketGateway.handleYoutubeDownloadProgress(clientSocketId, progress);
+        const progress = Math.round((videoDownloaded + audioDownloaded) * 50 / total);
+        this.youtubeGateway.handleYoutubeDownloadProgress(clientSocketId, progress);
       });
 
       audioStream.on('progress', (_, downloaded, total) => {
         audioDownloaded = downloaded;
-        const progress = Math.round((videoDownloaded + audioDownloaded) * 50 / (total));
-        this.socketGateway.handleYoutubeDownloadProgress(clientSocketId, progress);
+        const progress = Math.round((videoDownloaded + audioDownloaded) * 50 / total);
+        this.youtubeGateway.handleYoutubeDownloadProgress(clientSocketId, progress);
       });
 
       await Promise.all([
@@ -73,6 +73,7 @@ export class YoutubeService {
       this.fileMap.set(fileId, title);
       return { fileId };
     } catch (error) {
+      console.error(error);
       throw new HttpException(`Fehler beim Herunterladen des Videos: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -112,7 +113,7 @@ export class YoutubeService {
   }
 
   testProgressUpdate(clientId: string) {
-    this.socketGateway.handleYoutubeDownloadProgress(clientId, 50);
+    this.youtubeGateway.handleYoutubeDownloadProgress(clientId, 50);
   }
 
 }

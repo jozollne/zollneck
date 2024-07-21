@@ -267,4 +267,3 @@ const clearFiles = () => {
 </script>
   
 <style></style>
-@/stores/UploadStore

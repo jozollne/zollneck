@@ -12,6 +12,7 @@ const toast = useToast();
 const youtubeStore = useYoutubeStore();
 const url = ref('');
 const format = ref(false)
+const downloading = ref(false);
 
 let client: Socket;
 
@@ -21,8 +22,16 @@ watch(format, (newFormatValue) => {
     toast.add({severity: 'info', summary: 'Format geändert', detail: `Das Format wurde zu ${formatLabel} geändert.`, life: 3000});
 });
 
+const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  if (downloading.value) {
+    const message = 'Bist du sicher das du neu laden möchtest? Deine Änderungen werden eventuell nicht gespeichert.';
+    event.returnValue = message;
+    return message;
+  }
+};
 
 onMounted(() => {
+    window.addEventListener('beforeunload', handleBeforeUnload);
     client = io('wss://zollneck.de', { path: '/socket.io', transports: ['websocket'] });
     client.on('downloadProgress', (progress: number) => {
         youtubeStore.downloadProgress = progress;
@@ -30,12 +39,14 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
     if (client) {
         client.disconnect();
     }
 });
 
 const downloadFromYoutube = async () => {
+    downloading.value = true;
     if (!client || !client.id) {
         toast.add({ severity: 'error', summary: 'Fehler', detail: 'Socket-Verbindung nicht hergestellt', life: 3000 });
         return;
@@ -49,6 +60,7 @@ const downloadFromYoutube = async () => {
             downloadFromSevrer(response.fileId);
         }
     } catch (error: any) {
+        downloading.value = false;
         if (error.response.data.statusCode == HttpStatusCode.Unauthorized) {
             toast.add({ severity: 'error', summary: 'Session ungültig!', detail: 'Die Sitzung ist abgelaufen. Melde dich erneut an.', life: 3000 });
             functionStore.goToAuth();
@@ -75,15 +87,17 @@ const downloadFromSevrer = async (fileId: string) => {
 
         await deleteFile(fileId);
     } catch (error) {
+        downloading.value = false;
         toast.add({ severity: 'error', summary: 'Fehler beim Runterladen!', detail: 'Das Video konnte nicht herruntergeladen werden! ' + error, life: 3000 });
     }
 };
 
 const deleteFile = async (fileId: string) => {
     try {
+        downloading.value = false;
         await youtubeStore.deleteFileFromServer(fileId);
     } catch (error) {
-        console.log("Datei konnte auf dem Server nicht wieder gelöscht werden! " + error)
+        console.log("Datei konnte auf dem Server nicht gelöscht werden! " + error)
     }
 };
 
