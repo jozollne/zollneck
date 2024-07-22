@@ -2,10 +2,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore } from '../../stores/AuthStore';
 import axios from 'axios';
 import router from '@/router';
-import { useFunctionsStore } from '@/stores/funtionsStore';
+import { useFunctionsStore } from '@/stores/RouterStore';
 
 const functionStore = useFunctionsStore();
 const authStore = useAuthStore();

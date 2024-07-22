@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Users } from './auth/entities/users.entity';
-import { FormatFileModule } from './format-file/format-file.module';
-import { UploadtestModule } from './uploadtest/uploadtest.module';
+import { FormatFileModule } from './format-file/fileConvertor.module';
 import { YoutubeModule } from './youtube/youtube.module';
 import { CloudModule } from './cloud/cloud.module';
 
@@ -21,7 +20,6 @@ import { CloudModule } from './cloud/cloud.module';
     }),
     AuthModule,
     FormatFileModule,
-    UploadtestModule,
     YoutubeModule,
     CloudModule,
   ],

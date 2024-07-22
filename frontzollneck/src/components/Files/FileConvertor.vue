@@ -68,8 +68,8 @@
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios, { HttpStatusCode } from 'axios';
-import { useFunctionsStore } from '@/stores/funtionsStore';
-import { useUploadStore } from '@/stores/UploadStore';
+import { useFunctionsStore } from '@/stores/RouterStore';
+import { useUploadStore } from '@/stores/FileConvertorStore';
 
 const uploadStore = useUploadStore();
 const functionStore = useFunctionsStore();

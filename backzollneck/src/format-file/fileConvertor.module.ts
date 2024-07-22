@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { FormatFileController } from './format-file.controller';
-import { FormatFileService } from './format-file.service';
+import { FormatFileController } from './fileConvertor.controller';
+import { FormatFileService } from './fileConvertor.service';
 
 @Module({
   controllers: [FormatFileController],

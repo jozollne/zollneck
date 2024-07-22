@@ -3,9 +3,9 @@ import axios, { HttpStatusCode } from 'axios';
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client';
-import { useYoutubeStore } from '@/stores/youtubeStore';
+import { useYoutubeStore } from '@/stores/YoutubeStore';
 import { useToast } from 'primevue/usetoast';
-import { useFunctionsStore } from '@/stores/funtionsStore';
+import { useFunctionsStore } from '@/stores/RouterStore';
 
 const functionStore = useFunctionsStore();
 const toast = useToast();

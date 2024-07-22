@@ -1,14 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore } from '../stores/AuthStore';
 import HomePage from '../components/HomePage.vue'
 import AuthPage from '../components/Auth/AuthPage.vue'
 import FileConvertor from '../components/Files/FileConvertor.vue'
 import YoutubeVideoConvertor from '../components/Youtube/YoutubeVideoConvertor.vue'
 import TestPageVue from '@/components/TestPage.vue';
 import SecretPageVue from '@/components/Auth/SecretPage.vue';
-import { useFunctionsStore } from '@/stores/funtionsStore';
+import { useFunctionsStore } from '@/stores/RouterStore';
 import { useToast } from 'primevue/usetoast';
-import download from '../components/Files/fileSystem.vue'
+import download from '../components/Files/CloudPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

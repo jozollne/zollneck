@@ -70,8 +70,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useToast } from 'primevue/usetoast';
-import { useFunctionsStore } from './stores/funtionsStore';
-import { useAuthStore } from './stores/authStore';
+import { useFunctionsStore } from './stores/RouterStore';
+import { useAuthStore } from './stores/AuthStore';
 
 const toast = useToast();
 const authStore = useAuthStore();
