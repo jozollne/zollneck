@@ -83,7 +83,7 @@ const downloadFromSevrer = async (fileId: string) => {
         link.click();
         document.body.removeChild(link);
 
-        toast.add({ severity: 'success', summary: 'Download erfolgreich!', detail: `${formatText}: "' + response.headers['content-disposition'] + '" wurde erfolgreich konvertiert und runtergeladen!`, life: 3000 });
+        toast.add({ severity: 'success', summary: 'Download erfolgreich!', detail: response.headers['content-disposition'] + " wurde erfolgreich konvertiert und runtergeladen!", life: 3000 });
 
         await deleteFile(fileId);
     } catch (error) {
@@ -134,7 +134,7 @@ const testProgress = async () => {
                 <div class="field flex align-items-center justify-content-center">
                     <div class="flex align-items-center justify-content-center">
                         <label for="formatSwitch" class="mr-2">MP3</label>
-                        <InputSwitch v-model="format" id="formatSwitch" />
+                        <InputSwitch v-model="format" id="formatSwitch" :disabled="downloading"/>
                         <label for="formatSwitch" class="ml-2">MP4</label>
                     </div>
                 </div>

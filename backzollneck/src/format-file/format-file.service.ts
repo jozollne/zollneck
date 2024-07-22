@@ -1,11 +1,11 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import * as childProcess from 'child_process';
+import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
 import { v4 as uuidv4 } from 'uuid';
 
-const exec = promisify(childProcess.exec);
+const execPromise = promisify(exec);
 
 @Injectable()
 export class FormatFileService {
@@ -13,38 +13,45 @@ export class FormatFileService {
 
   async storeAndConvertFile(files: Array<Express.Multer.File>, format: string): Promise<{ fileId: string }> {
     if (files.length === 0) {
-      throw new HttpException('Keine Dateien zum Konvertieren bereitgestellt.', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Keine Dateien zum Konvertieren bereitgestellt.', HttpStatus.BAD_REQUEST);
     }
 
     for (const file of files) {
-      const tempDir = '/media/tempfiles';
-      const fileId = uuidv4();
-      const originalPath = path.join(tempDir, `${fileId}${path.extname(file.originalname)}`);
-      const convertedPath = path.join(tempDir, `${fileId}${format}`);
-      const newFileName = file.originalname.replace(/\.\w+$/, '') + format;
+        const tempDir = '/media/tempfiles';
+        const fileId = uuidv4();
+        const originalPath = path.join(tempDir, `${fileId}${path.extname(file.originalname)}`);
+        const convertedPath = path.join(tempDir, `${fileId}${format}`);
+        const newFileName = file.originalname.replace(/\.\w+$/, '') + format;
 
-      if (file.originalname.endsWith(format)) {
-        throw new HttpException(`Es ist nicht erlaubt, eine ${format}-Datei in eine ${format}-Datei umzuwandeln.`, HttpStatus.BAD_REQUEST);
-      }
+        if (file.originalname.endsWith(format)) {
+            throw new HttpException(`Es ist nicht erlaubt, eine ${format}-Datei in eine ${format}-Datei umzuwandeln.`, HttpStatus.BAD_REQUEST);
+        }
 
-      fs.writeFileSync(originalPath, file.buffer);
+        fs.writeFileSync(originalPath, file.buffer);
 
-      try {
-        await exec(`ffmpeg -i "${originalPath}" "${convertedPath}"`);
-        await fs.promises.chmod(convertedPath, 0o666);
-      } catch (error) {
-        throw new HttpException(`Fehler bei der Konvertierung: ${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
-      } finally {
-        await fs.promises.unlink(originalPath);
-        console.log("------------------------------")
-        console.log(`Datei erfolgreich formatiert: ${file.originalname} (Größe: ${file.size} Bytes)`);
-        console.log("------------------------------")
-      }
+        try {
+            console.log("Beginne Formatierung: " + fileId);
+            const startTime = Date.now();
+            const stderr = await execPromise(`ffmpeg -i "${originalPath}" -preset ultrafast -crf 20 "${convertedPath}"`);
+            const endTime = Date.now();
+            console.log(`ffmpeg stderr: ${stderr}`);
+            console.log("Formatierung abgeschlossen: " + fileId);
+            console.log(`Die Formatierung dauerte ${(endTime - startTime) / 1000} Sekunden.`);
+            await fs.promises.chmod(convertedPath, 0o666);
+        } catch (error) {
+            console.error(`Fehler bei der Konvertierung: ${error}`);
+            throw new HttpException(`Fehler bei der Konvertierung: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            await fs.promises.unlink(originalPath);
+            console.log("------------------------------");
+            console.log(`Datei erfolgreich formatiert: ${file.originalname} (Größe: ${file.size} Bytes)`);
+            console.log("------------------------------");
+        }
 
-      this.fileMap.set(fileId, newFileName);
-      return { fileId };
+        this.fileMap.set(fileId, newFileName);
+        return { fileId };
     }
-  }
+}
 
 async getFilePath(fileId: string): Promise<{ filePath: string, filename: string }> {
   if (this.fileMap.get(fileId)) {

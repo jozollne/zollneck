@@ -25,7 +25,7 @@
                                 <label for="typeAudio" class="ml-2">Audio</label>
                             </div>
                             <div class="flex align-items-center">
-                                <RadioButton v-model="selectedType" value="Video" inputId="typeVideo" name="fileType" />
+                                <RadioButton v-model="selectedType" value="Video" inputId="typeVideo" name="fileType" disabled/>
                                 <label for="typeVideo" class="ml-2">Video</label>
                             </div>
                             <div class="flex align-items-center">
@@ -65,7 +65,7 @@
 
 
 <script setup lang="ts">
-import { computed, ref, watch, type Ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios, { HttpStatusCode } from 'axios';
 import { useFunctionsStore } from '@/stores/funtionsStore';
@@ -80,6 +80,22 @@ const uploadStatus = ref(new Map());
 const fileUpload: Ref = ref(null);
 const filesSelected = ref(false);
 const selectedFormat = ref({ name: '', code: '' }); // Initialisiert mit einem leeren Objekt
+
+const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  if (filesSelected.value) {
+    const message = 'Bist du sicher das du neu laden möchtest? Deine Änderungen werden eventuell nicht gespeichert.';
+    event.returnValue = message;
+    return message;
+  }
+};
+
+onMounted(() => {
+    window.addEventListener('beforeunload', handleBeforeUnload);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+});
 
 const updateProgress = (file: { name: any; }, progress: number) => {
     uploadProgress.value.set(file.name, progress);
