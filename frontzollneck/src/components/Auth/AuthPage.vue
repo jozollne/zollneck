@@ -5,7 +5,7 @@ import LoginPage from '../Auth/LoginPage.vue';
 </script>
 
 <template>
-  <div class="flex flex-column md:flex-row" style="min-height: 90vh;">
+  <div class="flex flex-column md:flex-row pt-5" style="height: 84vh;">
     <div class="w-full md:w-5 flex flex-column align-items-center justify-content-center gap-3 py-5">
       <LoginPage></LoginPage>
     </div>
