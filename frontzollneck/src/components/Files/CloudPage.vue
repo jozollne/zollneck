@@ -9,7 +9,7 @@
             :auto="true" chooseLabel="Hochladen" :customUpload="true" @select="onUpload" :multiple="true" />
         </div>
       </template>
-      <Column :style="{ width: '1100px' }" field="name" header="Dateiname" ></Column>
+      <Column :style="{ width: '1100px' }" field="name" header="Dateiname"></Column>
       <Column :style="{ width: '110px' }" field="size" header="Größe"></Column>
       <Column :style="{ width: '240px' }" field="created" header="Erstellt"></Column>
       <Column :style="{ width: '170px' }">
@@ -23,7 +23,8 @@
       </Column>
       <Column :style="{ width: '85px' }">
         <template #body="{ data }">
-          <Button @click="onDelete(data.name)" icon="pi pi-trash" :disabled="data.downloading || data.uploading"></Button>
+          <Button @click="onDelete(data.name)" icon="pi pi-trash"
+            :disabled="data.downloading || data.uploading"></Button>
         </template>
       </Column>
     </DataTable>
@@ -37,12 +38,14 @@ import Column from 'primevue/column';
 import Button from 'primevue/button';
 import { useCloudStore } from '@/stores/CloudStore';
 import { useToast } from "primevue/usetoast";
-import { HttpStatusCode } from 'axios';
+import { AxiosError, HttpStatusCode } from 'axios';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client';
+import { useAuthStore } from '@/stores/AuthStore';
 
 let client: Socket;
 
+const authStore = useAuthStore()
 const toast = useToast();
 const cloudStore = useCloudStore();
 const dir = ref("/")
@@ -80,25 +83,36 @@ const test = () => {
 }
 
 const onUpload = () => {
+  authStore.checkUserToken()
+  if (authStore.isAuthenticated == false) {
+    toast.add({ severity: 'error', summary: 'Session ungültig!', detail: 'Die Sitzung ist abgelaufen. Melde dich erneut an.' });
+    return;
+  }
   if (fileUpload.value) {
     const uploadedFiles = fileUpload.value.files;
     uploadedFiles.forEach(async (file: any) => {
-      const newFile = {
-        name: file.name,
-        path: "null",
-        size: formatBytes(file.size),
-        created: "Gearde eben",
-        downloading: false,
-        uploading: true,
-        progress: 0
-      };
-      files.value.push(newFile);
+      console.log(file.size)
+      if (file.size > 70000000000) {
+        toast.add({ severity: 'error', summary: 'Datei zu groß!', detail: 'Maximal können 70Gb hochgeladen werden.' });
+      } else {
+        const newFile = {
+          name: file.name,
+          path: "null",
+          size: formatBytes(file.size),
+          created: "Gearde eben",
+          downloading: false,
+          uploading: true,
+          progress: 0
+        };
+        files.value.push(newFile);
+      }
+        const fileInProgress = files.value.find(f => f.name === file.name && f.uploading);
+      
       const formData = new FormData();
       //encodeURIComponent(file.name) = umlaute im dateinamen korigieren
       formData.append('file', file, encodeURIComponent(file.name));
       try {
         const response = await cloudStore.uploadFiles(formData, (percentCompleted) => {
-          const fileInProgress = files.value.find(f => f.name === file.name && f.uploading);
           if (fileInProgress) {
             fileInProgress.progress = Math.round(percentCompleted);
             activeDownloadOrUpload.value = true;
@@ -108,14 +122,11 @@ const onUpload = () => {
             }
           }
         });
-
         if (response) {
           toast.add({ severity: 'success', summary: file.name + ' hochgeladen!', detail: 'Die Datei ' + file.name + ' wurde hochgeladen!', life: 3000 });
         }
       } catch (error: any) {
-        if (error.response.data.statusCode == HttpStatusCode.Unauthorized) {
-          toast.add({ severity: 'error', summary: 'Session ungültig!', detail: 'Die Sitzung ist abgelaufen. Melde dich erneut an.', life: 3000 });
-        }
+        checkError(error);
       }
     });
   } else {
@@ -139,8 +150,8 @@ const onDownload = async (file: { downloading: boolean; name: string; }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  } catch (error) {
-    console.error('Fehler beim Herunterladen der Datei:', error);
+  } catch (error: any) {
+    checkError(error);
   } finally {
     file.downloading = false;
     activeDownloadOrUpload.value = false;
@@ -150,16 +161,16 @@ const onDownload = async (file: { downloading: boolean; name: string; }) => {
 const onDelete = async (filename: string) => {
   try {
     const response = await cloudStore.deleteFile(filename)
+    //Löscht die File auch aus dem lokalen array falls gerade erst hochgeladen :)
+    files.value = files.value.filter(f => f.name !== filename);
     if (response == true) {
       toast.add({ severity: 'success', summary: filename + ' gelöscht', detail: 'Die Datei ' + filename + ' wurde erfolgreich gelöscht!', life: 3000 });
     } else {
       toast.add({ severity: 'error', summary: 'Löschen fehlgeschlagen', detail: 'Das Löschen der Datei ' + filename + ' ist fehlgeschlagen!', life: 3000 });
     }
-  } catch(error) {
-    toast.add({ severity: 'error', summary: 'Unerwarteter Fehler', detail: error, life: 3000 });
+  } catch (error: any) {
+    checkError(error);
   } finally {
-    //Löscht die File auch aus dem lokalen array :)
-    files.value = files.value.filter(f => f.name !== filename);
   }
 }
 
@@ -170,11 +181,14 @@ const getFiles = async () => {
     files.value = fileList.map((file: { size: any; created: string; }) => ({
       ...file,
       size: formatBytes(Number(file.size)),
-      created: formatDate(file.created),  // Konvertiere das Datum in ein lesbares Format
+      created: formatDate(file.created),
       downloading: false
     }));
-  } catch (error) {
-    console.error('Fehler beim Laden der Dateien:', error);
+    if (fileList != "") {
+      toast.add({ severity: 'success', summary: 'Erfolg!', detail: "Datein wurden aktulisiert", life: 3000 });
+    }
+  } catch (error: any) {
+    checkError(error);
   }
 };
 
@@ -190,9 +204,6 @@ const formatDate = (dateString: string): string => {
   };
   return date.toLocaleDateString('de-DE', options);
 };
-
-
-
 
 const formatBytes = (bytes: number) => {
   const TB = BigInt(1000000000000);
@@ -210,6 +221,20 @@ const formatBytes = (bytes: number) => {
     return (Number(bytes) / Number(KB)).toFixed(2) + ' KB';
   } else {
     return bytes + ' Bytes';
+  }
+};
+
+const checkError = (error: AxiosError) => {
+  if (error.response) {
+    console.log(error.response.status);
+    if (error.response.status === HttpStatusCode.Unauthorized) {
+      toast.add({ severity: 'error', summary: 'Session ungültig!', detail: 'Die Sitzung ist abgelaufen. Melde dich erneut an.' });
+    } else {
+      toast.add({ severity: 'error', summary: 'Unbehandelter Fehler!', detail: error.message, life: 3000 });
+    }
+  } else {
+    console.error(error.message);
+    toast.add({ severity: 'error', summary: 'Fehler', detail: 'Ein unbekannter Fehler ist aufgetreten', life: 3000 });
   }
 };
 </script>

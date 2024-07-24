@@ -1,4 +1,5 @@
 <template>
+  <Toast position="bottom-center" />
   <div class="app">
     <div class="fixed top-4 left-0 w-full z-5">
       <Header />

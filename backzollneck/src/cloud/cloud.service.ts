@@ -10,20 +10,15 @@ import { Response } from 'express';
 
 @Injectable()
 export class CloudService {
-  async uploadFile(files: Array<Express.Multer.File>): Promise<{ fileName: string }> {
+  async uploadFiles(files: Array<Express.Multer.File>): Promise<Array<{ fileName: string }>> {
     if (files.length === 0) {
       throw new HttpException('Keine Dateien zum Hochladen bereitgestellt.', HttpStatus.BAD_REQUEST);
     }
 
-    for (const file of files) {
-      const tempDir = '/media/filesystem';
-      const fileName = file.originalname;
-      const originalPath = path.join(tempDir, fileName);
-
-      fs.writeFileSync(originalPath, file.buffer);
-      return { fileName };
-    }
+    const fileNames = files.map(file => ({ fileName: file.filename }));
+    return fileNames;
   }
+
 
   async getFiles(): Promise<{ name: string, path: string, size: number, created: Date }[]> {
     const directoryPath = '/media/filesystem/';
@@ -43,12 +38,12 @@ export class CloudService {
       throw new HttpException('Fehler beim Lesen des Verzeichnisses', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  
+
 
   async getFilePath(fileName: string): Promise<{ filePath: string }> {
-      const tempDir = '/media/filesystem';
-      const filePath = path.join(tempDir, fileName);
-      return { filePath };
+    const tempDir = '/media/filesystem';
+    const filePath = path.join(tempDir, fileName);
+    return { filePath };
   }
 
   async downloadFile(fileName: string, res: Response, clientId: string, socketGateway: SocketGateway) {

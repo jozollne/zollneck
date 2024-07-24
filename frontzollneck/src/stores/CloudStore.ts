@@ -15,7 +15,7 @@ export const useCloudStore = defineStore('cloud', {
                 });
                 return response.data;
             } catch (error) {
-                console.error('Fehler beim Laden der Dateien:', error);
+                throw error;
             }
         },
 
@@ -55,7 +55,6 @@ export const useCloudStore = defineStore('cloud', {
         },
 
         async deleteFile(fileName: string) {
-            console.log(localStorage.getItem('userToken'))
             try {
                 const response = await axios.delete(`https://zollneck.de/api/cloud/deleteFromServer/${fileName}`, {
                     headers: {

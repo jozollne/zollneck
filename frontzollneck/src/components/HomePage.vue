@@ -103,7 +103,7 @@ import { ref } from 'vue';
 
 <style>
 .app-background {
-    background-image: url('/public/background.jpg');
+    background-image: url('/background.jpg');
     background-size: cover;
     background-attachment: fixed;
     background-position: center;
