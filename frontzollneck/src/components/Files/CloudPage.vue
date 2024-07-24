@@ -91,7 +91,6 @@ const onUpload = () => {
   if (fileUpload.value) {
     const uploadedFiles = fileUpload.value.files;
     uploadedFiles.forEach(async (file: any) => {
-      console.log(file.size)
       if (file.size > 70000000000) {
         toast.add({ severity: 'error', summary: 'Datei zu groß!', detail: 'Maximal können 70Gb hochgeladen werden.' });
       } else {
@@ -226,7 +225,6 @@ const formatBytes = (bytes: number) => {
 
 const checkError = (error: AxiosError) => {
   if (error.response) {
-    console.log(error.response.status);
     if (error.response.status === HttpStatusCode.Unauthorized) {
       toast.add({ severity: 'error', summary: 'Session ungültig!', detail: 'Die Sitzung ist abgelaufen. Melde dich erneut an.' });
     } else {

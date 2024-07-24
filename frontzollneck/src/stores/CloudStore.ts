@@ -36,7 +36,6 @@ export const useCloudStore = defineStore('cloud', {
         },
 
         async uploadFiles(formData: FormData, progressCallback: (percentCompleted: number) => void) {
-            console.log(formData)
             try {
                 const response = await axios.post('https://zollneck.de/api/cloud/uploadFile', formData, {
                     headers: {
