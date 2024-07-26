@@ -32,7 +32,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/festingstuff',
+      path: '/testingstuff',
       name: 'test',
       component: TestPageVue,
       meta: { requiresAuth: false }

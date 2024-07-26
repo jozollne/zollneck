@@ -29,6 +29,10 @@ import RadioButton from 'primevue/radiobutton';
 import InputSwitch from 'primevue/inputswitch';
 import Image from 'primevue/image'
 import Galleria from 'primevue/galleria'
+import Accordion from 'primevue/accordion';
+import AccordionTab from 'primevue/accordiontab';
+import Textarea from 'primevue/textarea'
+import Footer from '@/components/Overlay/Footer.vue'
 
 const app = createApp(Overlay)
 const pinia = createPinia()
@@ -38,6 +42,10 @@ app.use(router)
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
 
+app.component('Footer', Footer)
+app.component('Textarea', Textarea)
+app.component('AccordionTab', AccordionTab)
+app.component('Accordion', Accordion)
 app.component('Galleria', Galleria)
 app.component('Image', Image)
 app.component('Chips', Chips)
