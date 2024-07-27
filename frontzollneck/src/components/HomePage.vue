@@ -55,7 +55,8 @@
                     </p>
                 </div>
             </div>
-            <div class="absolute bottom-0 left-0 right-0 flex align-items-center justify-content-center gap-3 pb-2 flex-wrap">
+            <div
+                class="absolute bottom-0 left-0 right-0 flex align-items-center justify-content-center gap-3 pb-2 flex-wrap">
                 <Button icon="pi pi-angle-double-up" label="Top" class="w-full md:w-auto" @click="scrollTo('top')" />
                 <Button icon="pi pi-angle-double-down" label="Dreineinhalb Jahre AWI" class="w-full md:w-auto"
                     @click="scrollTo('awi')" />
@@ -147,31 +148,36 @@
                 </div>
             </div>
         </div>
-        <div id="kontakt" class="flex align-items-center justify-content-center font-bold flex-column pt-8">
-            <p class="text-5xl">Ich freue mich über eine Nachricht!</p>
-            <div class="p-float-label flex flex-column mb-5 w-full md:w-10">
-                <InputText v-model="email" id="contactemail" required />
-                <label for="contactemail">E-Mail</label>
+        <form @submit.prevent="sendContact" class="flex flex-column align-items-stretch gap-4 p-2">
+            <div id="kontakt" class="flex align-items-center justify-content-center font-bold flex-column pt-8">
+                <p class="text-5xl">Ich freue mich über eine Nachricht!</p>
+                <div class="p-float-label flex flex-column mb-5 w-full md:w-10">
+                    <InputText v-model="email" id="contactemail" required autocomplete="email" />
+                    <label for="contactemail">E-Mail</label>
+                </div>
+                <div class="p-float-label flex flex-column mb-5 w-full md:w-10">
+                    <InputText v-model="thema" id="thema" required />
+                    <label for="thema">Um was geht es?</label>
+                </div>
+                <div class="p-float-label flex flex-column mb-3 w-full md:w-10">
+                    <Textarea v-model="message" id="message" required rows="5" cols="30" class="max-w-full" />
+                    <label for="message">Nachricht</label>
+                </div>
+                <Button label="Senden" type="submit" class="mb-3 w-full md:w-10"></Button>
             </div>
-            <div class="p-float-label flex flex-column mb-5 w-full md:w-10">
-                <InputText v-model="thema" id="thema" required />
-                <label for="thema">Thema</label>
-            </div>
-            <div class="p-float-label flex flex-column mb-3 w-full md:w-10">
-                <Textarea v-model="message" id="message" rows="5" cols="30" class="max-w-full" />
-                <label for="message">Nachricht</label>
-            </div>
-            <Button label="Senden" class="mb-3 w-full md:w-10"></Button>
-        </div>
+        </form>
     </div>
 </template>
 
 <script setup lang="ts">
+import axios from 'axios';
 import { ref } from 'vue';
+import { useToast } from 'primevue/usetoast';
 
-const email = ref('Hab noch nicht die Logik dafür gemacht. Mache ich nächstes mal :D');
-const thema = ref('Hab noch nicht die Logik dafür gemacht. Mache ich nächstes mal :D');
-const message = ref('Hab noch nicht die Logik dafür gemacht. Mache ich nächstes mal :D');
+const toast = useToast();
+const email = ref('');
+const thema = ref('');
+const message = ref('');
 
 const scrollTo = (id: string) => {
     if (id != "top") {
@@ -183,6 +189,27 @@ const scrollTo = (id: string) => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 };
+
+const sendContact = () => {
+    const options = {
+        method: 'POST',
+        url: 'https://zollneck.de/api/contact/newContact',
+        headers: { 'Content-Type': 'application/json' },
+        data: {
+            email: email.value,
+            subject: thema.value,
+            message: message.value
+        }
+    };
+
+    axios.request(options).then(function (response) {
+        console.log(response.data);
+        toast.add({ severity: 'success', summary: 'Nachricht gesendet!', detail: 'Betreff: ' + response.data, life: 3000 });
+    }).catch(function (error) {
+        toast.add({ severity: 'error', summary: 'Fehler!', detail: error, life: 3000 });
+        console.error(error);
+    });
+}
 </script>
 
 <style>

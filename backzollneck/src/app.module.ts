@@ -5,6 +5,8 @@ import { Users } from './auth/entities/users.entity';
 import { FormatFileModule } from './format-file/fileConvertor.module';
 import { YoutubeModule } from './youtube/youtube.module';
 import { CloudModule } from './cloud/cloud.module';
+import { ContactModule } from './contact/contact.module';
+import { Contact } from './contact/entities/contact.entity';
 
 @Module({
   imports: [
@@ -15,13 +17,13 @@ import { CloudModule } from './cloud/cloud.module';
       username: 'jozollne',
       password: process.env.DB_PASSWORD,
       database: 'zollneckdb',
-      entities: [Users],
-      synchronize: true,
+      entities: [Users, Contact],
     }),
     AuthModule,
     FormatFileModule,
     YoutubeModule,
     CloudModule,
+    ContactModule,
   ],
 
 })
