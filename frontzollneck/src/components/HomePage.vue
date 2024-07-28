@@ -1,21 +1,50 @@
 <template>
     <div class="app-background">
-        <div class="relative h-screen">
-            <div class="flex align-items-center justify-content-center h-full">
+        <div class="flex flex-column align-items-center justify-content-center h-screen">
+            <div class="flex align-items-center justify-content-center">
                 <div class="md:pr-8">
                     <p class="font-bold text-center md:text-left text-4xl md:text-7xl">Hi, ich bin John Zollner</p>
                     <p class="text-xl md:text-4xl">
                         I definitely <span
-                            class="font-bold text-center md:text-left text-indigo-300 line-through">don't</span> know
-                        what
-                        I'm doing
-                        :)
+                            class="font-bold text-center md:text-left text-indigo-300 line-through">don't</span>
+                        know
+                        what I'm doing :)
                     </p>
                 </div>
                 <Image src="/Profilbild.png" width="550" preview class="hidden xl:block"></Image>
             </div>
-            <div
-                class="absolute bottom-0 left-0 right-0 flex align-items-center justify-content-center pb-8 gap-3 flex-wrap">
+            <div class="flex flex-wrap justify-content-center gap-5 align-items-center pt-3">
+                <div class="icon-container flex flex-column sm:flex-row align-items-center">
+                    <img src="@/icons/c-sharp-16-svgrepo-com.svg" alt="C# Icon" class="w-2rem xl:w-4rem" />
+                    <span class="pt-2 sm:pt-0 sm:pl-2 text-xs xl:text-3xl font-bold">3+ Years</span>
+                </div>
+                <div class="icon-container flex flex-column sm:flex-row align-items-center">
+                    <img src="@/icons/javascript-16-svgrepo-com.svg" alt="JavaScript Icon" class="w-2rem xl:w-4rem" />
+                    <span class="pt-2 sm:pt-0 sm:pl-2 text-xs xl:text-3xl font-bold">2+ Years</span>
+                </div>
+                <div class="icon-container flex flex-column sm:flex-row align-items-center">
+                    <img src="@/icons/nestjs-svgrepo-com.svg" alt="NestJS Icon" class="w-2rem xl:w-4rem" />
+                    <span class="pt-2 sm:pt-0 sm:pl-2 text-xs xl:text-3xl font-bold">1+ Years</span>
+                </div>
+                <div class="icon-container flex flex-column sm:flex-row align-items-center">
+                    <img src="@/icons/postgresql-svgrepo-com.svg" alt="PostgreSQL Icon" class="w-2rem xl:w-4rem" />
+                    <span class="pt-2 sm:pt-0 sm:pl-2 text-xs xl:text-3xl font-bold">2+ Years</span>
+                </div>
+                <div class="icon-container flex flex-column sm:flex-row align-items-center">
+                    <img src="@/icons/vuejs-svgrepo-com.svg" alt="VueJS Icon" class="w-2rem xl:w-4rem" />
+                    <span class="pt-2 sm:pt-0 sm:pl-2 text-xs xl:text-3xl font-bold">2+ Years</span>
+                </div>
+                <div class="icon-container flex flex-column sm:flex-row align-items-center">
+                    <img src="@/icons/jira-svgrepo-com.svg" alt="Jira Icon" class="w-2rem xl:w-4rem" />
+                    <span class="pt-2 sm:pt-0 sm:pl-2 text-xs xl:text-3xl font-bold">3+ Years</span>
+                </div>
+                <div class="icon-container flex flex-column sm:flex-row align-items-center">
+                    <img src="@/icons/cisco-svgrepo-com.svg" alt="Cisco Icon" class="w-2rem xl:w-4rem" />
+                    <span class="pt-2 sm:pt-0 sm:pl-2 text-xs xl:text-3xl font-bold">2+ Years</span>
+                </div>
+            </div>
+
+            <div class="flex align-items-center justify-content-center pt-6 gap-3">
                 <Button icon="pi pi-angle-double-down" label="Über mich" class="w-full md:w-auto"
                     @click="scrollTo('about')" />
                 <Button icon="pi pi-angle-double-down" label="Dreineinhalb Jahre AWI" class="w-full md:w-auto"
@@ -25,10 +54,10 @@
             </div>
         </div>
 
-        <div id="about" class="relative h-screen">
-            <div class="flex align-items-center justify-content-center md:pl-7 h-full">
+        <div id="about" class="flex flex-column align-items-center justify-content-center h-screen">
+            <div class="flex flex-column md:flex-row align-items-center justify-content-center md:pl-7 w-full">
                 <Image src="/liegen.jpg" width="600" preview class="hidden xl:block"></Image>
-                <div class="md:pl-7">
+                <div class="pl-1 md:pl-7">
                     <p class="text-4xl text-center md:text-left md:text-6xl font-bold">Über mich</p>
                     <p class="text-base md:text-4xl font-semibold">
                         Hi, ich bin John Zollner, 20 Jahre jung! Ich habe meine zweieinhalbjährige Ausbildung am
@@ -42,7 +71,6 @@
                         bei
                         dem ich einen wichtigen Beitrag leisten kann.
                     </p>
-
                     <p class="text-base md:text-4xl font-semibold">
                         Bei mir zu Hause <span class="font-bold text-indigo-300">hatte</span> niemand eine Ahnung von
                         Technik – mich eingeschlossen. Das hat mich angespornt, mehr über Computer zu lernen. Je älter
@@ -55,8 +83,7 @@
                     </p>
                 </div>
             </div>
-            <div
-                class="absolute bottom-0 left-0 right-0 flex align-items-center justify-content-center gap-3 pb-2 flex-wrap">
+            <div class="flex align-items-center justify-content-center gap-3">
                 <Button icon="pi pi-angle-double-up" label="Top" class="w-full md:w-auto" @click="scrollTo('top')" />
                 <Button icon="pi pi-angle-double-down" label="Dreineinhalb Jahre AWI" class="w-full md:w-auto"
                     @click="scrollTo('awi')" />
@@ -233,9 +260,5 @@ const sendContact = () => {
 
 .content-text {
     margin-left: 20px;
-}
-
-.awi {
-    background-color: rgb(55, 65, 81);
 }
 </style>
