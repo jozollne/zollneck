@@ -248,7 +248,7 @@ const sendContact = () => {
 
 .vertical-line {
     width: 30px;
-    height: 315vh;
+    height: 360vh;
     background: linear-gradient(to bottom, blueviolet, darkblue);
     border-radius: 5px;
     /* Adds rounded corners */
