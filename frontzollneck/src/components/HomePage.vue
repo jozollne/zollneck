@@ -98,7 +98,6 @@
             <p class="text-center text-5xl md:text-8xl font-bold text-indigo-300">Alfred-Wegener-Institut</p>
         </div>
         <div class="flex align-items-start pl-2 md:pl-7">
-            <div class="vertical-line hidden md:block"></div>
             <div class="md:pl-5">
                 <p class="text-2xl md:text-6xl font-bold">
                     <i class="pi pi-code text-2xl md:text-6xl mr-2"></i>
@@ -244,18 +243,6 @@ const sendContact = () => {
     background-image: url('/background.jpg');
     background-size: cover;
     background-attachment: fixed;
-}
-
-.vertical-line {
-    width: 30px;
-    height: 360vh;
-    background: linear-gradient(to bottom, blueviolet, darkblue);
-    border-radius: 5px;
-    /* Adds rounded corners */
-    position: relative;
-    /* Changed to relative to work with padding */
-    left: 0;
-    top: 0;
 }
 
 .content-text {
