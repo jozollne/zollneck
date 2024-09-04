@@ -9,6 +9,7 @@ import SecretPageVue from '@/components/Auth/SecretPage.vue';
 import { useFunctionsStore } from '@/stores/RouterStore';
 import { useToast } from 'primevue/usetoast';
 import download from '../components/Files/CloudPage.vue'
+import newHomePage from '../components/newHomePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +36,12 @@ const router = createRouter({
       path: '/testingstuff',
       name: 'test',
       component: TestPageVue,
+      meta: { requiresAuth: false }
+    },
+    {
+      path: '/newhome',
+      name: 'newhome',
+      component: newHomePage,
       meta: { requiresAuth: false }
     },
     {

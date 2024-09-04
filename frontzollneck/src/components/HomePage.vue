@@ -5,10 +5,9 @@
                 <div class="md:pr-8">
                     <p class="font-bold text-center md:text-left text-4xl md:text-7xl">Hi, ich bin John Zollner</p>
                     <p class="text-xl md:text-4xl">
-                        I definitely <span
-                            class="font-bold text-center md:text-left text-indigo-300 line-through">don't</span>
-                        know
-                        what I'm doing :)
+                        Ich weiß definitiv <span
+                            class="font-bold text-center md:text-left text-indigo-300 line-through">nicht</span>
+                        was ich tue :)
                     </p>
                 </div>
                 <Image src="/Profilbild.png" width="550" preview class="hidden xl:block"></Image>
@@ -47,7 +46,7 @@
             <div class="flex align-items-center justify-content-center pt-6 gap-3">
                 <Button icon="pi pi-angle-double-down" label="Über mich" class="w-full md:w-auto"
                     @click="scrollTo('about')" />
-                <Button icon="pi pi-angle-double-down" label="Dreineinhalb Jahre AWI" class="w-full md:w-auto"
+                <Button icon="pi pi-angle-double-down" label="Dreieinhalb Jahre AWI" class="w-full md:w-auto"
                     @click="scrollTo('awi')" />
                 <Button icon="pi pi-angle-double-down" label="Kontakt" class="w-full md:w-auto"
                     @click="scrollTo('kontakt')" />
@@ -93,7 +92,7 @@
         </div>
         <div id="awi" class="text-center pt-5">
             <p class="text-center text-3xl md:text-7xl font-bold">
-                Meine drei ein halb Jahre beim
+                Meine dreieinhalb Jahre beim
             </p>
             <p class="text-center text-5xl md:text-8xl font-bold text-indigo-300">Alfred-Wegener-Institut</p>
         </div>
@@ -103,14 +102,14 @@
                     <i class="pi pi-code text-2xl md:text-6xl mr-2"></i>
                     Softwareentwicklung ♥️
                 </p>
-                <p class="text-xl md:text-6xl font-bold">Datenbankanwendung für die Wissenschaftliche Werkstadt</p>
+                <p class="text-xl md:text-6xl font-bold">Datenbankanwendung für die wissenschaftliche Werkstatt</p>
                 <div class="flex align-content-start">
                     <Image src="/WissWerk.png" width="850" preview class="hidden xl:block"></Image>
                     <div class="md:pl-7">
                         <p class="text-base md:text-5xl font-semibold">Für mein Abschlussprojekt habe ich eine
                             Datenbankanwendung
-                            für unsere Wissenschaftliche Werkstadt erschaffen. Dafür habe ich selbstsädig Front- und
-                            Backend sowie Datenbank geplannt und entwickelt.</p>
+                            für unsere wissenschaftliche Werkstadt erschaffen. Dafür habe ich selbstständig Front- und
+                            Backend sowie Datenbank geplant und entwickelt.</p>
                     </div>
                 </div>
                 <Divider />
@@ -123,7 +122,7 @@
                             sicheres
                             Front- und Backend zur Verwaltung der Internetverbindung auf der FS-Heincke zu bauen.
                             Mit dieser Seite können autorisierte Crew-Mitglieder die Internetverbindung des
-                            Forschungsschiffes FS-Heicnke mit einem Knpofdruck einstellen und testen.</p>
+                            Forschungsschiffes FS-Heicnke mit einem Knopfdruck einstellen und testen.</p>
                     </div>
                 </div>
                 <p class="text-2xl md:text-6xl font-bold">
@@ -151,7 +150,8 @@
                         <p class="text-base md:text-5xl font-semibold">In meiner Ausbildung habe ich ein abgeschottetes
                             Netzwerk
                             mit einem WSUS, WDS, DNS, DHCP, ADDC und drei Layer zwei Switchen erstellt. So hatte ich
-                            mein eigenes Phyisches Netz in dem ich machen konnte was ich wollte.</p>
+                            mein eigenes physisches Netz, in dem ich machen konnte, was ich wollte. Erstellen eines
+                            Azubinetztes</p>
                     </div>
                 </div>
                 <p class="text-2xl md:text-6xl font-bold">
@@ -161,7 +161,7 @@
                 <div class="flex align-content-start">
                     <Image src="/helpdesk/gudsupport.jpeg" width="650" preview class="hidden xl:block"></Image>
                     <div class="md:pl-7">
-                        <p class="text-xl md:text-6xl font-bold">Interner 1st und später auch 2nd Level Support</p>
+                        <p class="text-xl md:text-6xl font-bold">Interner 1st und später auch 2nd-Level-Support</p>
                         <p class="text-base md:text-5xl font-semibold">Ein größer Teil meiner Zeit am AWI war die Arbeit
                             im
                             Heldpesk. Hier habe ich anfangs 1st Level Probleme aufgenommen und bearbeitet. Später
