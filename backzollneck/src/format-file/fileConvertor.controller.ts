@@ -9,7 +9,6 @@ export class FormatFileController {
   constructor(private formatFileService: FormatFileService) { }
 
   @Post('storeAndConvertFile')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('file', 20, {
     limits: { fileSize: 5000 * 1024 * 1024 }
   }))
@@ -19,7 +18,6 @@ export class FormatFileController {
   }
 
   @Get('download/:fileId')
-  @UseGuards(JwtAuthGuard)
   async downloadFile(@Param('fileId') fileId: string, @Res() res: Response) {
     try {
       const { filePath, filename } = await this.formatFileService.getFilePath(fileId);

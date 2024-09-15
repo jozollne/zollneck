@@ -1,6 +1,6 @@
 <template>
     <div class="card">
-        <div class="flex align-items-center justify-content-center" style="height: 80vh;">
+        <div class="flex align-items-center justify-content-center" style="height: 84vh;">
             <div class="flex flex-column align-items-center">
                 <FileUpload ref="fileUpload" :auto="false" :customUpload="true" :multiple="true"
                     :accept="getAcceptedFormats" :maxFileSize="1000000000" :name="'files'" @select="onSelectedFiles">

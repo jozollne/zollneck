@@ -13,10 +13,6 @@ export const useYoutubeStore = defineStore('upload', {
                 url: url,
                 clientId: clientId,
                 format: format
-            }, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('userToken')}`
-                }
             });
             return response.data;
         },
@@ -28,21 +24,12 @@ export const useYoutubeStore = defineStore('upload', {
                     const total =  progressEvent.total || 1;
                     const progress = 50 + Math.round((progressEvent.loaded * 50) / total);
                     this.downloadProgress = progress;
-                },
-
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                }
-            });
+                }});
             return response;
         },
 
         async deleteFileFromServer(fileId: string) {
-            await axios.delete(`https://zollneck.de/api/youtube/deleteFromServer/${fileId}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                }
-            });
+            await axios.delete(`https://zollneck.de/api/youtube/deleteFromServer/${fileId}`);
             return
         }
     }

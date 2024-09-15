@@ -9,16 +9,12 @@ export const useUploadStore = defineStore('upload', {
         async storeAndConvertFile(formData: FormData, progressCallback: (percentCompleted: number) => void) {
             try {
                 const response = await axios.post('https://zollneck.de/api/file/storeAndConvertFile', formData, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                    },
                     onUploadProgress: (progressEvent) => {
                         const total = progressEvent.total ?? 1;
                         const percentCompleted = Math.round((progressEvent.loaded * 100) / total);
                         progressCallback(percentCompleted);
                     }
                 });
-
                 return response.data;
             } catch (error) {
                 throw error;
@@ -29,9 +25,6 @@ export const useUploadStore = defineStore('upload', {
             try {
                 const response = await axios.get(`https://zollneck.de/api/file/download/${fileId}`, {
                     responseType: 'blob',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                    }
                 });
                 return response;
             } catch (error) {
@@ -42,9 +35,6 @@ export const useUploadStore = defineStore('upload', {
         async deleteFile(fileId: string) {
             try {
                 const response = await axios.post(`https://zollneck.de/api/file/delete/${fileId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                    }
                 });
                 return response.data;
             } catch (error) {

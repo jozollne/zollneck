@@ -33,6 +33,7 @@ import Accordion from 'primevue/accordion';
 import AccordionTab from 'primevue/accordiontab';
 import Textarea from 'primevue/textarea'
 import Footer from '@/components/Overlay/Footer.vue'
+import Dialog from 'primevue/dialog'
 
 const app = createApp(Overlay)
 const pinia = createPinia()
@@ -44,6 +45,7 @@ app.use(ToastService);
 
 app.component('Footer', Footer)
 app.component('Textarea', Textarea)
+app.component('Dialog', Dialog)
 app.component('AccordionTab', AccordionTab)
 app.component('Accordion', Accordion)
 app.component('Galleria', Galleria)

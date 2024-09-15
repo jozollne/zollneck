@@ -18,6 +18,9 @@ export const useFunctionsStore = defineStore('functions', {
         goToAuth() {
             router.push({ name: 'auth' });
         },
+        goToScreenshot() {
+            router.push({ name: 'screenshot' });
+        },
         goToFileConvertor() {
             router.push({ name: 'fileConvertor' });
         },
@@ -31,7 +34,7 @@ export const useFunctionsStore = defineStore('functions', {
             router.push({ name: 'home' });
         },
         goToDownload() {
-            router.push({ name: 'download' });
+            router.push({ name: 'cloud' });
         }
     }
 });

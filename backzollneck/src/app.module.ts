@@ -7,6 +7,7 @@ import { YoutubeModule } from './youtube/youtube.module';
 import { CloudModule } from './cloud/cloud.module';
 import { ContactModule } from './contact/contact.module';
 import { Contact } from './contact/entities/contact.entity';
+import { ScreenshotModule } from './screenshot/screenshot.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { Contact } from './contact/entities/contact.entity';
     YoutubeModule,
     CloudModule,
     ContactModule,
+    ScreenshotModule,
   ],
 
 })

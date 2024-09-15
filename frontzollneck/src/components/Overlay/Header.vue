@@ -134,7 +134,57 @@ const konvertorItems = computed(() => {
         }
     });
 
+    items.push({
+        label: 'Konverter',
+        icon: 'pi pi-file-edit',
+        items: [
+            {
+                label: 'YouTube',
+                icon: 'pi pi-youtube',
+                command: () => {
+                    functionsStore.goToYoutubeVideo();
+                }
+                /* items: [
+                  {
+                    label: 'Videos',
+                    icon: 'pi pi-video',
+                    shortcut: '🪟+B',
+                    command: () => {
+                      functionsStore.goToYoutubeVideo();
+                    }
+                  },
+                  {
+                    label: 'Musik',
+                    icon: 'pi pi-volume-up',
+                    shortcut: '🪟+M',
+                    command: () => {
+                      functionsStore.goToYoutubeAudio();
+                    }
+                  }
+                ] */
+            },
+            {
+                separator: true
+            },
+            {
+                label: 'Dateien',
+                icon: 'pi pi-file',
+                command: () => {
+                    functionsStore.goToFileConvertor();
+                }
+            }
 
+        ]
+
+    });
+
+    items.push({
+        label: 'Screenshots',
+        icon: 'pi pi-camera',
+        command: () => {
+            functionsStore.goToScreenshot();
+        }
+    });
     /* items.push({
       label: 'Test',
       icon: 'pi pi-pencil',
@@ -144,49 +194,6 @@ const konvertorItems = computed(() => {
     }); */
 
     if (authStore.isAuthenticated) {
-        items.push({
-            label: 'Konverter',
-            icon: 'pi pi-file-edit',
-            items: [
-                {
-                    label: 'YouTube',
-                    icon: 'pi pi-youtube',
-                    command: () => {
-                        functionsStore.goToYoutubeVideo();
-                    }
-                    /* items: [
-                      {
-                        label: 'Videos',
-                        icon: 'pi pi-video',
-                        shortcut: '🪟+B',
-                        command: () => {
-                          functionsStore.goToYoutubeVideo();
-                        }
-                      },
-                      {
-                        label: 'Musik',
-                        icon: 'pi pi-volume-up',
-                        shortcut: '🪟+M',
-                        command: () => {
-                          functionsStore.goToYoutubeAudio();
-                        }
-                      }
-                    ] */
-                },
-                {
-                    separator: true
-                },
-                {
-                    label: 'Dateien',
-                    icon: 'pi pi-file',
-                    command: () => {
-                        functionsStore.goToFileConvertor();
-                    }
-                }
-
-            ]
-
-        });
 
         items.push({
             label: 'Cloud',

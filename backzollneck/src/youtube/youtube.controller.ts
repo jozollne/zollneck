@@ -8,7 +8,6 @@ export class YoutubeController {
   constructor(private readonly youtubeService: YoutubeService) { }
 
   @Post('downloadFromYoutube')
-  @UseGuards(JwtAuthGuard)
   async download(@Body('url') url: string, @Body('clientId') clientId: string, @Body('format') format: boolean) {
     try {
       const result = await this.youtubeService.downloadVideoFromYoutube(url, clientId, format);
@@ -19,7 +18,6 @@ export class YoutubeController {
   }
 
   @Get('downloadFromServer/:fileId')
-  @UseGuards(JwtAuthGuard)
   async downloadFile(@Param('fileId') fileId: string, @Res() res: Response) {
     try {
       const { filePath, filename } = await this.youtubeService.getFilePath(fileId);
@@ -31,7 +29,6 @@ export class YoutubeController {
   }
 
   @Delete('deleteFromServer/:fileId')
-  @UseGuards(JwtAuthGuard)
   async deleteFile(@Param('fileId') fileId: string) {
     const result = await this.youtubeService.deleteFile(fileId);
     return result;

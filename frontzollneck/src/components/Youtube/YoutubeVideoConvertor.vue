@@ -118,7 +118,7 @@ const testProgress = async () => {
 </script>
 
 <template>
-    <div class="flex align-items-center justify-content-center" style="height: 80vh;">
+    <div class="flex align-items-center justify-content-center" style="height: 84vh;">
         <div class="card p-4 shadow-4 border-round col-12 col-md-8 col-lg-6">
             <div class="text-center mb-4">
                 <h1>Videos oder Musik von Youtube runterladen</h1>
