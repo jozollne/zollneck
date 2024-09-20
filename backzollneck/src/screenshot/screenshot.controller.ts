@@ -1,6 +1,5 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { ScreenshotService } from './screenshot.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('screenshot')
 export class ScreenshotController {

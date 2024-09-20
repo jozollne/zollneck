@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import router from '@/router';
 import { useAuthStore } from './AuthStore';
 
-export const useFunctionsStore = defineStore('functions', {
+export const useRouterStore = defineStore('functions', {
     state: () => ({
         oldRoute: '',
     }),
@@ -35,6 +35,9 @@ export const useFunctionsStore = defineStore('functions', {
         },
         goToDownload() {
             router.push({ name: 'cloud' });
-        }
+        },
+        goToMinecraft() {
+            router.push({ name: 'minecraft' });
+        },
     }
 });

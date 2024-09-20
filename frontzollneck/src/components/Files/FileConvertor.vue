@@ -68,11 +68,11 @@
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios, { HttpStatusCode } from 'axios';
-import { useFunctionsStore } from '@/stores/RouterStore';
+import { useRouterStore } from '@/stores/RouterStore';
 import { useUploadStore } from '@/stores/FileConvertorStore';
 
 const uploadStore = useUploadStore();
-const functionStore = useFunctionsStore();
+const functionStore = useRouterStore();
 const toast = useToast();
 const selectedType = ref('');
 const uploadProgress = ref(new Map());

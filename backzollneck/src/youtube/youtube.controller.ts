@@ -1,6 +1,5 @@
 import { Controller, Post, Body, Res, UseGuards, HttpStatus, HttpException, Get, Param, Delete } from '@nestjs/common';
 import { YoutubeService } from './youtube.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Response } from 'express';
 
 @Controller('youtube')

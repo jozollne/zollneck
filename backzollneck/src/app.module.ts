@@ -8,6 +8,7 @@ import { CloudModule } from './cloud/cloud.module';
 import { ContactModule } from './contact/contact.module';
 import { Contact } from './contact/entities/contact.entity';
 import { ScreenshotModule } from './screenshot/screenshot.module';
+import { MinecraftModule } from './minecraft/minecraft.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ScreenshotModule } from './screenshot/screenshot.module';
     CloudModule,
     ContactModule,
     ScreenshotModule,
+    MinecraftModule,
   ],
 
 })

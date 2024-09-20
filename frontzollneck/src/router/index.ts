@@ -6,10 +6,11 @@ import FileConvertor from '../components/Files/FileConvertor.vue'
 import YoutubeVideoConvertor from '../components/Youtube/YoutubeVideoConvertor.vue'
 import TestPageVue from '@/components/TestPage.vue';
 import SecretPageVue from '@/components/Auth/SecretPage.vue';
-import { useFunctionsStore } from '@/stores/RouterStore';
+import { useRouterStore } from '@/stores/RouterStore';
 import { useToast } from 'primevue/usetoast';
 import cloud from '../components/Files/CloudPage.vue'
 import takeScreenshotPage from '@/components/takescreenshot/takeScreenshotPage.vue';
+import Minecraft from '@/components/Minecraft/MinecraftPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,7 +40,7 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
-      path: '/takeScreenshotPage',
+      path: '/apps/takeScreenshotPage',
       name: 'screenshot',
       component: takeScreenshotPage,
       meta: { requiresAuth: false }
@@ -68,12 +69,18 @@ const router = createRouter({
       component: cloud,
       meta: { requiresAuth: true }
     },
+    {
+      path: '/server/minecraft',
+      name: 'minecraft',
+      component: Minecraft,
+      meta: { requiresAuth: true }
+    },
   ]
 })
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  const functionStore = useFunctionsStore();
+  const functionStore = useRouterStore();
   const toast = useToast(); // Stellen Sie sicher, dass Sie `useToast` importieren
 
   if (to.name !== 'auth') {

@@ -5,9 +5,9 @@ import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '../../stores/AuthStore';
 import axios from 'axios';
 import router from '@/router';
-import { useFunctionsStore } from '@/stores/RouterStore';
+import { useRouterStore } from '@/stores/RouterStore';
 
-const functionStore = useFunctionsStore();
+const functionStore = useRouterStore();
 const authStore = useAuthStore();
 const email = ref('');
 const password = ref('');

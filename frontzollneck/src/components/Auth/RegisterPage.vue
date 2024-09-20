@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { useFunctionsStore } from '../../stores/RouterStore'
 import { useAuthStore } from '../../stores/AuthStore';
 import axios from 'axios';
 
-const funtionsStore = useFunctionsStore();
 const authStore = useAuthStore();
 const email = ref('');
 const password = ref('');
-const retypePassword = ref('');
 const username = ref('');
 const firstName = ref('');
 const lastName = ref('');

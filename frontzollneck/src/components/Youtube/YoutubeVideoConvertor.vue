@@ -5,9 +5,9 @@ import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client';
 import { useYoutubeStore } from '@/stores/YoutubeStore';
 import { useToast } from 'primevue/usetoast';
-import { useFunctionsStore } from '@/stores/RouterStore';
+import { useRouterStore } from '@/stores/RouterStore';
 
-const functionStore = useFunctionsStore();
+const functionStore = useRouterStore();
 const toast = useToast();
 const youtubeStore = useYoutubeStore();
 const url = ref('');

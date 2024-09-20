@@ -69,12 +69,12 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useToast } from 'primevue/usetoast';
-import { useFunctionsStore } from '@/stores/RouterStore';
+import { useRouterStore } from '@/stores/RouterStore';
 import { useAuthStore } from '@/stores/AuthStore';
 
 const toast = useToast();
 const authStore = useAuthStore();
-const functionsStore = useFunctionsStore();
+const routerStore = useRouterStore();
 const menu = ref();
 
 const username = computed(() => {
@@ -90,7 +90,7 @@ const userItems = computed(() => {
             label: 'Abmelden',
             icon: 'pi pi-power-off',
             command: () => {
-                functionsStore.logOut();
+                routerStore.logOut();
                 toast.add({ severity: 'success', summary: 'Erfolgreich abgemeldet!', detail: 'Nutzer: "' + username.value + '" wurde erfolgreich abgemeldet!', life: 2000 });
             }
         },
@@ -108,7 +108,7 @@ const userItems = computed(() => {
             label: 'Anmelden',
             icon: 'pi pi-user',
             command: () => {
-                functionsStore.goToAuth();
+                routerStore.goToAuth();
             }
         })
     }
@@ -130,7 +130,7 @@ const konvertorItems = computed(() => {
         label: 'Home',
         icon: 'pi pi-home',
         command: () => {
-            functionsStore.goToHome();
+            routerStore.goToHome();
         }
     });
 
@@ -142,7 +142,7 @@ const konvertorItems = computed(() => {
                 label: 'YouTube',
                 icon: 'pi pi-youtube',
                 command: () => {
-                    functionsStore.goToYoutubeVideo();
+                    routerStore.goToYoutubeVideo();
                 }
                 /* items: [
                   {
@@ -170,7 +170,7 @@ const konvertorItems = computed(() => {
                 label: 'Dateien',
                 icon: 'pi pi-file',
                 command: () => {
-                    functionsStore.goToFileConvertor();
+                    routerStore.goToFileConvertor();
                 }
             }
 
@@ -182,7 +182,7 @@ const konvertorItems = computed(() => {
         label: 'Screenshots',
         icon: 'pi pi-camera',
         command: () => {
-            functionsStore.goToScreenshot();
+            routerStore.goToScreenshot();
         }
     });
     /* items.push({
@@ -194,12 +194,21 @@ const konvertorItems = computed(() => {
     }); */
 
     if (authStore.isAuthenticated) {
-
         items.push({
             label: 'Cloud',
             icon: 'pi pi-cloud-download',
             command: () => {
-                functionsStore.goToDownload();
+                routerStore.goToDownload();
+            }
+        });
+    }
+
+    if (authStore.isAuthenticated) {
+        items.push({
+            label: 'Minecraft Server',
+            icon: 'pi pi-box',
+            command: () => {
+                routerStore.goToMinecraft();
             }
         });
     }

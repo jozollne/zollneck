@@ -44,6 +44,7 @@
     "passport-jwt": "^4.0.1",
     "pg": "^8.11.3",
     "puppeteer": "^23.3.0",
+    "rcon-client": "^4.2.5",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.5",

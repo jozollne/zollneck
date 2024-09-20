@@ -79,11 +79,11 @@
 import axios from 'axios';
 import { ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { useFunctionsStore } from '@/stores/RouterStore';
+import { useRouterStore } from '@/stores/RouterStore';
 import { useAuthStore } from '@/stores/AuthStore';
 
 const authStore = useAuthStore();
-const functionsStore = useFunctionsStore();
+const functionsStore = useRouterStore();
 const toast = useToast();
 const email = ref('');
 const thema = ref('');

@@ -1,4 +1,12 @@
 <template>
+  <ConfirmPopup group="confirmDelete">
+    <template #message="slotProps">
+      <div class="flex flex-column align-items-center w-full gap-3 border-bottom-1 surface-border p-3 mb-3 pb-0">
+        <i :class="slotProps.message.icon" class="text-6xl text-primary-500"></i>
+        <p>{{ slotProps.message.message }}</p>
+      </div>
+    </template>
+  </ConfirmPopup>
   <div class="p-d-flex p-jc-center p-ai-center pt-2">
     <DataTable :value="files" class="p-col-10" resizableColumns>
       <template #header>
@@ -23,7 +31,7 @@
       </Column>
       <Column :style="{ width: '85px' }">
         <template #body="{ data }">
-          <Button @click="onDelete(data.name)" icon="pi pi-trash"
+          <Button @click="onDelete(data.name, $event)" icon="pi pi-trash"
             :disabled="data.downloading || data.uploading"></Button>
         </template>
       </Column>
@@ -42,9 +50,11 @@ import { AxiosError, HttpStatusCode } from 'axios';
 import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client';
 import { useAuthStore } from '@/stores/AuthStore';
+import { useConfirm } from "primevue/useconfirm";
 
 let client: Socket;
 
+const confirm = useConfirm();
 const authStore = useAuthStore()
 const toast = useToast();
 const cloudStore = useCloudStore();
@@ -85,7 +95,7 @@ const test = () => {
 const onUpload = () => {
   authStore.checkUserToken()
   if (authStore.isAuthenticated == false) {
-    toast.add({ severity: 'error', summary: 'Session ungültig!', detail: 'Die Sitzung ist abgelaufen. Melde dich erneut an.' });
+    toast.add({ severity: 'error', summary: 'Session abgelaufen!', detail: 'Aktion nicht durchgeführt, bitte lade die Seite neu.', group: 'sessionExpired' });
     return;
   }
   if (fileUpload.value) {
@@ -105,8 +115,8 @@ const onUpload = () => {
         };
         files.value.push(newFile);
       }
-        const fileInProgress = files.value.find(f => f.name === file.name && f.uploading);
-      
+      const fileInProgress = files.value.find(f => f.name === file.name && f.uploading);
+
       const formData = new FormData();
       //encodeURIComponent(file.name) = umlaute im dateinamen korigieren
       formData.append('file', file, encodeURIComponent(file.name));
@@ -157,20 +167,40 @@ const onDownload = async (file: { downloading: boolean; name: string; }) => {
   }
 };
 
-const onDelete = async (filename: string) => {
-  try {
-    const response = await cloudStore.deleteFile(filename)
-    //Löscht die File auch aus dem lokalen array falls gerade erst hochgeladen :)
-    files.value = files.value.filter(f => f.name !== filename);
-    if (response == true) {
-      toast.add({ severity: 'success', summary: filename + ' gelöscht', detail: 'Die Datei ' + filename + ' wurde erfolgreich gelöscht!', life: 3000 });
-    } else {
-      toast.add({ severity: 'error', summary: 'Löschen fehlgeschlagen', detail: 'Das Löschen der Datei ' + filename + ' ist fehlgeschlagen!', life: 3000 });
+const onDelete = async (filename: string, event: any) => {
+  confirm.require({
+    target: event.currentTarget,
+    group: 'confirmDelete',
+    message: "Willst du die Datei wirklich löschen?",
+    icon: 'pi pi-exclamation-circle',
+    acceptIcon: 'pi pi-check',
+    rejectIcon: 'pi pi-times',
+    acceptLabel: 'Confirm',
+    rejectLabel: 'Cancel',
+    rejectClass: 'p-button-outlined p-button-sm',
+    acceptClass: 'p-button-sm',
+    accept: async () => {
+      try {
+        const response = await cloudStore.deleteFile(filename)
+        //Löscht die File auch aus dem lokalen array falls gerade erst hochgeladen :)
+        files.value = files.value.filter(f => f.name !== filename);
+        if (response == true) {
+          toast.add({ severity: 'success', summary: filename + ' gelöscht', detail: 'Die Datei ' + filename + ' wurde erfolgreich gelöscht!', life: 3000 });
+        } else {
+          toast.add({ severity: 'error', summary: 'Löschen fehlgeschlagen', detail: 'Das Löschen der Datei ' + filename + ' ist fehlgeschlagen!', life: 3000 });
+        }
+      } catch (error: any) {
+        checkError(error);
+      } finally {
+      }
+    },
+
+    reject: () => {
+      console.log("rejected")
     }
-  } catch (error: any) {
-    checkError(error);
-  } finally {
-  }
+  });
+
+
 }
 
 
@@ -226,7 +256,7 @@ const formatBytes = (bytes: number) => {
 const checkError = (error: AxiosError) => {
   if (error.response) {
     if (error.response.status === HttpStatusCode.Unauthorized) {
-      toast.add({ severity: 'error', summary: 'Session ungültig!', detail: 'Die Sitzung ist abgelaufen. Melde dich erneut an.' });
+      toast.add({ severity: 'error', summary: 'Session abgelaufen!', detail: 'Aktion nicht durchgeführt, bitte lade die Seite neu.', group: 'sessionExpired' });
     } else {
       toast.add({ severity: 'error', summary: 'Unbehandelter Fehler!', detail: error.message, life: 3000 });
     }

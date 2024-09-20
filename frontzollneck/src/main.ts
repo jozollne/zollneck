@@ -34,6 +34,8 @@ import AccordionTab from 'primevue/accordiontab';
 import Textarea from 'primevue/textarea'
 import Footer from '@/components/Overlay/Footer.vue'
 import Dialog from 'primevue/dialog'
+import ConfirmPopup from 'primevue/confirmpopup'
+import ConfirmService from 'primevue/confirmationservice'
 
 const app = createApp(Overlay)
 const pinia = createPinia()
@@ -42,8 +44,10 @@ app.use(pinia)
 app.use(router)
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
+app.use(ConfirmService)
 
 app.component('Footer', Footer)
+app.component('ConfirmPopup', ConfirmPopup)
 app.component('Textarea', Textarea)
 app.component('Dialog', Dialog)
 app.component('AccordionTab', AccordionTab)
