@@ -87,7 +87,7 @@ const removeMinecraftFormatting = (text: string) => {
 };
 
 const upcomming = () => {
-    toast.add({ severity: 'info', summary: 'Kommende Features:', detail: "Weltenverwaltung (Mehrere Welten)\nLive Logs anzeigen", life: 5000 });
+    toast.add({ severity: 'info', summary: 'Kommende Features:', detail: "- Weltenverwaltung (Mehrere Welten)\n- Live Logs anzeigen\n- Command History in Datenbank saven", life: 5000 });
 };
 
 
