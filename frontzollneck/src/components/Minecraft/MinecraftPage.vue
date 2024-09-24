@@ -7,26 +7,47 @@
             </div>
         </template>
     </ConfirmPopup>
-    <div class="flex align-items-center justify-content-center" style="height: 84vh">
+    <div class="flex align-items-center justify-content-center" style="height: 79vh">
         <div class="card p-4 shadow-4 border-round col-12 col-md-8 col-lg-6">
-            <div class="text-center mb-4">
+            <div class="text-center md:text-lg text-xs mb-4">
                 <h1>Verwaltungsseite vom Miecraftserver zollneck.de</h1>
             </div>
 
-            <div class="md:flex align-items-center justify-content-center gap-2">
+            <div class="flex align-items-center justify-content-center gap-2">
                 <Button :label="status" :disabled="loading" :severity="color" @click="getStatus()"
-                    class="w-full"></Button>
+                    class="md:w-full w-9"></Button>
                 <Button v-if="running" :loading="loading" icon="pi pi-pause" severity="danger"
                     @click="stopServer()"></Button>
                 <Button v-if="!running" :loading="loading" icon="pi pi-play" severity="success"
                     @click="startServer()"></Button>
             </div>
+
+            <form @submit.prevent="sendCommand(commandToSend)"
+                class="p-fluid flex align-items-center justify-content-center gap-2 mt-5">
+                <span class="p-float-label md:w-full w-9">
+                    <InputText v-model="commandToSend" id="command" required :disabled="!running || loading"
+                        class="" />
+                    <label for="command">Konsole</label>
+                </span>
+                <Button icon="pi pi-send" :disabled="!running || loading" type="submit"></Button>
+            </form>
+
+            <div class="md:flex align-items-center justify-content-center pt-2">
+                <Accordion class="w-full">
+                    <AccordionTab v-for="(command, index) in commandHistory" :key="index" :header="command.command">
+                        <p class="m-0">{{ command.response }}</p>
+                    </AccordionTab>
+                </Accordion>
+            </div>
         </div>
+    </div>
+    <div class="flex align-items-end justify-content-end">
+        <Button label="Was kommt noch?" @click="upcomming()"></Button>
     </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useMinecraftStore } from '@/stores/MinecraftStore';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from "primevue/useconfirm";
@@ -40,10 +61,57 @@ const running = ref();
 const loading = ref();
 const color = ref("warning")
 const status = ref("Status: Unbekannt")
+const commandToSend = ref("")
+const commandHistory = ref<{ command: string, response: string }[]>([]);
 
 onMounted(async () => {
+    window.addEventListener('beforeunload', handleBeforeUnload);
     getStatus()
 });
+
+onUnmounted(() => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+});
+
+
+const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  if (loading.value) {
+    const message = 'Bist du sicher das du neu laden möchtest? Deine Änderungen werden eventuell nicht gespeichert.';
+    event.returnValue = message;
+    return message;
+  }
+};
+
+const removeMinecraftFormatting = (text: string) => {
+    return text.replace(/§[0-9a-fk-or]/g, '');
+};
+
+const upcomming = () => {
+    toast.add({ severity: 'info', summary: 'Kommende Features:', detail: "Weltenverwaltung (Mehrere Welten)\nLive Logs anzeigen", life: 5000 });
+};
+
+
+const sendCommand = async (command: string) => {
+    try {
+        loading.value = true
+        const formattedCommand = command.startsWith('/') ? command.replace('/', '') : command;
+        const response = await minecraftStore.sendCommand(formattedCommand);
+        if (response != "") {
+            const formattedResponse = removeMinecraftFormatting(response.output);
+            commandHistory.value.unshift({ command: command, response: formattedResponse });
+            if (commandHistory.value.length > 5) {
+                commandHistory.value.pop();
+            }
+            toast.add({ severity: 'success', summary: 'Befehl ausgeführt! Antwort:', detail: response.output, life: 10000 });
+        } else {
+            toast.add({ severity: 'info', summary: 'Unbehandelter Fehler:', detail: response, life: 3000 });
+        }
+    } catch (error: any) {
+        checkError(error)
+    } finally {
+        loading.value = false
+    }
+};
 
 const getStatus = async () => {
     try {
@@ -54,7 +122,7 @@ const getStatus = async () => {
             color.value = "success"
             status.value = "Status: Läuft"
         } else {
-            toast.add({ severity: 'info', summary: 'Server ist aus!', detail: "Der Minecraft Server ist aus!", life: 3000 });
+            toast.add({ severity: 'success', summary: 'Server ist aus!', detail: "Der Minecraft Server ist aus!", life: 3000 });
             color.value = "danger"
             running.value = false
             status.value = "Status: Aus"
@@ -69,19 +137,17 @@ const startServer = async () => {
         'Willst du den Minecraft-Server wirklich starten?',
         async () => {
             try {
-                const response = await minecraftStore.startServer();
                 loading.value = true;
-                toast.add({ severity: 'success', summary: 'Wird gestartet!', detail: 'Der Minecraft Server wird nun gestartet', life: 3000 });
-                if (response.success) {
-                    // Weitere Logik hier
-                } else {
+                toast.add({ severity: 'info', summary: 'Wird gestartet!', detail: 'Der Minecraft Server wird nun gestartet', life: 3000 });
+                const response = await minecraftStore.startServer();
+                if (!response.success) {
                     toast.add({ severity: 'warn', summary: 'Bereits gestartet oder Fehler!', detail: 'Der Minecraft Server ist bereits aktiv oder es ist ein Fehler aufgetreten', life: 3000 });
                 }
-                await getStatus();
             } catch (error: any) {
                 checkError(error)
             } finally {
                 loading.value = false;
+                await getStatus();
             }
         }
     );
@@ -92,18 +158,16 @@ const stopServer = async () => {
         'Willst du den Minecraft-Server wirklich stoppen?',
         async () => {
             try {
-                const response = await minecraftStore.stopServer();
                 loading.value = true;
-                toast.add({ severity: 'success', summary: 'Wird gestoppt!', detail: 'Der Minecraft Server wird nun gestoppt', life: 3000 });
-                if (response.success) {
-                    // Weitere Logik hier
-                } else {
+                toast.add({ severity: 'info', summary: 'Wird gestoppt!', detail: 'Der Minecraft Server wird nun gestoppt', life: 3000 });
+                const response = await minecraftStore.stopServer();
+                if (!response.success) {
                     toast.add({ severity: 'warn', summary: 'Bereits gestoppt oder Fehler!', detail: 'Der Minecraft Server ist bereits aus oder es ist ein Fehler aufgetreten', life: 3000 });
                 }
-                await getStatus();
             } catch (error: any) {
                 checkError(error)
             } finally {
+                await getStatus();
                 loading.value = false;
             }
         }
