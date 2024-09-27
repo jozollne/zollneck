@@ -9,6 +9,7 @@ import { ContactModule } from './contact/contact.module';
 import { Contact } from './contact/entities/contact.entity';
 import { ScreenshotModule } from './screenshot/screenshot.module';
 import { MinecraftModule } from './minecraft/minecraft.module';
+import { CommandLog } from './minecraft/entities/commandLog.entity';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { MinecraftModule } from './minecraft/minecraft.module';
       username: 'jozollne',
       password: process.env.DB_PASSWORD,
       database: 'zollneckdb',
-      entities: [Users, Contact],
+      entities: [Users, Contact, CommandLog],
+      //synchronize: true,
     }),
     AuthModule,
     FormatFileModule,

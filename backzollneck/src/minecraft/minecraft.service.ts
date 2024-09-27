@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { exec } from 'child_process';
 import { Rcon } from 'rcon-client';
+import { CommandLog } from './entities/commandLog.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class MinecraftService {
+    constructor(
+        @InjectRepository(CommandLog) private CommandLogRepository: Repository<CommandLog>,
+    ) { }
 
     async isServerRunning(): Promise<boolean> {
         return new Promise((resolve, reject) => {
@@ -68,6 +74,12 @@ export class MinecraftService {
             if (!response || response.trim() === '') {
                 return `Command '${command}' executed successfully. No output returned.`;
             }
+
+            const commandLog = this.CommandLogRepository.create({
+                command,
+                response,
+            });
+            this.CommandLogRepository.save(commandLog)
 
             return response;
         } catch (error) {
