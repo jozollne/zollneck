@@ -15,8 +15,8 @@ async function bootstrap() {
   app.use(urlencoded({ limit: '50mb', extended: true }));
   app.use(helmet());
   app.use(rateLimit({
-    windowMs: 60 * 60 * 1000, // 60 Minuten
-    max: 500, // Limit auf 100 Anfragen pro IP
+    windowMs: 24 * 60 * 60 * 1000, // 24 Stunden ist ein Login gültig
+    max: 500, // Limit auf 500 Anfragen pro IP
   }));
 
   app.use((req: Request, res: Response, next) => {
