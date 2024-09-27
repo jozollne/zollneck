@@ -21,7 +21,7 @@ import { CommandLog } from './minecraft/entities/commandLog.entity';
       password: process.env.DB_PASSWORD,
       database: 'zollneckdb',
       entities: [Users, Contact, CommandLog],
-      //synchronize: true,
+      synchronize: true,
     }),
     AuthModule,
     FormatFileModule,

@@ -44,11 +44,25 @@ export const useMinecraftStore = defineStore('minecraft', {
             }
         },
 
-        async sendCommand(command: string) {
+        async sendCommand(username: string | null, command: string ) {
             try {
                 const response = await axios.post(`https://zollneck.de/api/minecraft/command`, {
+                    username: username,
                     command: command
                 }, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                    }
+                });
+                return response.data;
+            } catch (error) {
+                throw error;
+            }
+        },
+
+        async getCommandLog() {
+            try {
+                const response = await axios.get('https://zollneck.de/api/minecraft/getCommand', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('userToken')}`
                     }

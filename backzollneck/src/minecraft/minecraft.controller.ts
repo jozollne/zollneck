@@ -4,7 +4,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('minecraft')
 export class MinecraftController {
-  constructor(private readonly minecraftService: MinecraftService) {}
+  constructor(private readonly minecraftService: MinecraftService) { }
 
   @Get('status')
   @UseGuards(JwtAuthGuard)
@@ -13,10 +13,15 @@ export class MinecraftController {
     return { running: running };
   }
 
+  @Get('getCommand')
+  getCommandlog() {
+    return this.minecraftService.getCommandLog();
+  }
+
   @Post('command')
   @UseGuards(JwtAuthGuard)
-  async sendCommand(@Body('command') command: string): Promise<{ output: string }> {
-    const output = await this.minecraftService.sendRconCommand(command);
+  async sendCommand(@Body('username') username: string, @Body('command') command: string, ): Promise<{ output: string }> {
+    const output = await this.minecraftService.sendRconCommand(username, command);
     return { output };
   }
 

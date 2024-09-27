@@ -10,7 +10,7 @@
     <div class="flex align-items-center justify-content-center" style="height: 79vh">
         <div class="card p-4 shadow-4 border-round col-12 col-md-8 col-lg-6">
             <div class="text-center md:text-lg text-xs mb-4">
-                <h1>Verwaltungsseite vom Miecraftserver zollneck.de</h1>
+                <h1>Verwaltungsseite vom Minecraftserver zollneck.de</h1>
             </div>
 
             <div class="flex align-items-center justify-content-center gap-2">
@@ -25,19 +25,24 @@
             <form @submit.prevent="sendCommand(commandToSend)"
                 class="p-fluid flex align-items-center justify-content-center gap-2 mt-5">
                 <span class="p-float-label md:w-full w-9">
-                    <InputText v-model="commandToSend" id="command" required :disabled="!running || loading"
-                        class="" />
+                    <InputText v-model="commandToSend" id="command" required :disabled="!running || loading" class="" />
                     <label for="command">Konsole</label>
                 </span>
                 <Button icon="pi pi-send" :disabled="!running || loading" type="submit"></Button>
             </form>
 
             <div class="md:flex align-items-center justify-content-center pt-2">
+                <div v-if="loading" class="text-center mt-3">
+                    <i class="pi pi-spin pi-spinner" style="font-size: 2em"></i>
+                    <p>Lade historische kommands...</p>
+                </div>
+
                 <Accordion class="w-full">
-                    <AccordionTab v-for="(command, index) in commandHistory" :key="index" :header="command.command">
-                        <p class="m-0">{{ command.response }}</p>
+                    <AccordionTab v-for="command in commandHistory" :key="command.command_id" :header="command.command">
+                        <p class="m-0">{{"Macher: \"" + command.username + "\" Antwort: " + command.response }}</p>
                     </AccordionTab>
                 </Accordion>
+
             </div>
         </div>
     </div>
@@ -62,11 +67,12 @@ const loading = ref();
 const color = ref("warning")
 const status = ref("Status: Unbekannt")
 const commandToSend = ref("")
-const commandHistory = ref<{ command: string, response: string }[]>([]);
+const commandHistory = ref<{ command_id: number, username: string, command: string, response: string }[]>([]);
 
 onMounted(async () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     getStatus()
+    getCommandLog();
 });
 
 onUnmounted(() => {
@@ -75,11 +81,29 @@ onUnmounted(() => {
 
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-  if (loading.value) {
-    const message = 'Bist du sicher das du neu laden möchtest? Deine Änderungen werden eventuell nicht gespeichert.';
-    event.returnValue = message;
-    return message;
-  }
+    if (loading.value) {
+        const message = 'Bist du sicher das du neu laden möchtest? Deine Änderungen werden eventuell nicht gespeichert.';
+        event.returnValue = message;
+        return message;
+    }
+};
+
+const getCommandLog = async () => {
+    try {
+        loading.value = true;
+        commandHistory.value = [];
+        const response = await minecraftStore.getCommandLog();
+        commandHistory.value = response.map((entry: { command_id: number, username:string, command: string; response: string; }) => ({
+            command_id: entry.command_id,
+            username: entry.username,
+            command: entry.command,
+            response: removeMinecraftFormatting(entry.response)
+        }));
+    } catch (error: any) {
+        checkError(error);
+    } finally {
+        loading.value = false;
+    }
 };
 
 const removeMinecraftFormatting = (text: string) => {
@@ -87,31 +111,28 @@ const removeMinecraftFormatting = (text: string) => {
 };
 
 const upcomming = () => {
-    toast.add({ severity: 'info', summary: 'Kommende Features:', detail: "- Weltenverwaltung (Mehrere Welten)\n- Live Logs anzeigen\n- Command History in Datenbank saven", life: 5000 });
+    toast.add({ severity: 'info', summary: 'Kommende Features:', detail: "- Weltenverwaltung (Mehrere Welten)\n- Live Logs anzeigen", life: 5000 });
 };
 
 
 const sendCommand = async (command: string) => {
     try {
-        loading.value = true
+        loading.value = true;
         const formattedCommand = command.startsWith('/') ? command.replace('/', '') : command;
-        const response = await minecraftStore.sendCommand(formattedCommand);
+        const response = await minecraftStore.sendCommand(localStorage.getItem('userAccount'), formattedCommand);
         if (response != "") {
-            const formattedResponse = removeMinecraftFormatting(response.output);
-            commandHistory.value.unshift({ command: command, response: formattedResponse });
-            if (commandHistory.value.length > 5) {
-                commandHistory.value.pop();
-            }
             toast.add({ severity: 'success', summary: 'Befehl ausgeführt! Antwort:', detail: response.output, life: 10000 });
         } else {
             toast.add({ severity: 'info', summary: 'Unbehandelter Fehler:', detail: response, life: 3000 });
         }
     } catch (error: any) {
-        checkError(error)
+        checkError(error);
     } finally {
-        loading.value = false
+        getCommandLog();
+        loading.value = false;
     }
 };
+
 
 const getStatus = async () => {
     try {
@@ -210,6 +231,7 @@ const checkError = (error: any) => {
         toast.add({ severity: 'error', summary: 'Fehler', detail: 'Ein unbekannter Fehler ist aufgetreten', life: 3000 });
     }
 };
+
 </script>
 
 <style scoped>

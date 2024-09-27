@@ -61,7 +61,7 @@ export class MinecraftService {
         });
     }
 
-    async sendRconCommand(command: string): Promise<string> {
+    async sendRconCommand(username: string, command: string): Promise<string> {
         const rcon = await Rcon.connect({
             host: 'zollneck.de',
             port: 34567,
@@ -76,6 +76,7 @@ export class MinecraftService {
             }
 
             const commandLog = this.CommandLogRepository.create({
+                username,
                 command,
                 response,
             });
@@ -88,4 +89,14 @@ export class MinecraftService {
             rcon.end();
         }
     }
+
+    async getCommandLog(): Promise<CommandLog[]> {
+        return this.CommandLogRepository.find({
+            order: {
+                command_id: 'DESC',
+            },
+            take: 5,
+        });
+    }
+
 }
