@@ -30,10 +30,16 @@
 import Header from '@/components/Overlay/Header.vue'
 import Footer from '@/components/Overlay/Footer.vue'
 import { useToast } from 'primevue/usetoast';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useAuthStore } from '../../stores/AuthStore';
 
+const authStore = useAuthStore();
 const toast = useToast();
 const visible = ref(false);
+
+onMounted(async () => {
+  await authStore.checkUserToken()
+});
 
 const onClose = () => {
     visible.value = false;
