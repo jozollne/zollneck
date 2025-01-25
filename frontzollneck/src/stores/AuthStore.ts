@@ -6,10 +6,10 @@ export const useAuthStore = defineStore('auth', {
         isAuthenticated: localStorage.getItem('userToken') !== null,
     }),
     actions: {
-        async registerUser(email: string, password: string, username: string, firstName: string, lastName: string) {
+        async registerUser(email: string, password: string, username: string, firstName: string, lastName: string, why: string) {
             try {
                 await axios.post('https://zollneck.de/api/auth/create', {
-                    email, password, username, firstName, lastName
+                    email, password, username, firstName, lastName, why
                 });
             } catch (error) {
                 // Fehlerbehandlung, falls die Anfrage fehlschlägt oder die Serverantwort einen Fehler anzeigt

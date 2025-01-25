@@ -20,7 +20,7 @@ export class AuthController {
   @Post('create')
   async create(@Body() createUserDto: CreateUserDto) {
     try {
-      await this.authService.create(createUserDto.email, createUserDto.password, createUserDto.username, createUserDto.firstName, createUserDto.lastName);
+      await this.authService.create(createUserDto.email, createUserDto.password, createUserDto.username, createUserDto.firstName, createUserDto.lastName, createUserDto.why);
       return { message: "Erstellung erfolgreich!" };
     } catch (error) {
       throw new HttpException(error.message, error.status);

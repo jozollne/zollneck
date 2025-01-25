@@ -10,7 +10,7 @@
                         was ich tue :)
                     </p>
                 </div>
-                <Image src="/Profilbild.png" width="550" preview class="hidden xl:block"></Image>
+                <Image src="/baum_round.png" width="550" preview class="hidden xl:block"></Image>
             </div>
             <div class="flex flex-wrap justify-content-center gap-5 align-items-center pt-3">
                 <div class="icon-container flex flex-column sm:flex-row align-items-center">
@@ -145,13 +145,13 @@
                 <div class="flex align-content-start">
                     <Image src="/meineDreiSwtiche.jpg" width="350" preview class="hidden xl:block"></Image>
                     <div class="md:pl-7">
-                        <p class="text-xl md:text-6xl font-bold">Erstellen eines Azubinetztes
+                        <p class="text-xl md:text-6xl font-bold">Mein erstes Spinnennetz
                         </p>
                         <p class="text-base md:text-5xl font-semibold">In meiner Ausbildung habe ich ein abgeschottetes
                             Netzwerk
                             mit einem WSUS, WDS, DNS, DHCP, ADDC und drei Layer zwei Switchen erstellt. So hatte ich
-                            mein eigenes physisches Netz, in dem ich machen konnte, was ich wollte. Erstellen eines
-                            Azubinetztes</p>
+                            mein eigenes physisches Netz, in dem ich machen konnte, was ich wollte.
+                        </p>
                     </div>
                 </div>
                 <p class="text-2xl md:text-6xl font-bold">

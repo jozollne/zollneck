@@ -13,7 +13,7 @@
                         Wenn du dich anmeldest, kannst du alle Funktionen meiner Website nutzen 🤠🤠🤠
                     </p>
                 </div>
-                <Image src="/Chillig round.png" width="500" preview class="hidden xl:block"></Image>
+                <Image src="/baum_round.png" width="500" preview class="hidden xl:block"></Image>
             </div>
             <div class="flex flex-wrap justify-content-center gap-5 align-items-center pt-3">
                 <div class="icon-container flex flex-column sm:flex-row align-items-center">
@@ -54,25 +54,25 @@
             </div>
         </div>
         <form @submit.prevent="sendContact" class="flex flex-column align-items-stretch gap-4 p-2">
-        <div id="kontakt" class="flex align-items-center justify-content-center font-bold flex-column pt-8">
-            <p class="text-5xl">Hier kannst mit mir in Konatk treten!</p>
-            <div class="p-float-label flex flex-column mb-5 w-full md:w-10">
-                <InputText v-model="email" id="contactemail" required autocomplete="email" />
-                <label for="contactemail">E-Mail</label>
+            <div id="kontakt" class="flex align-items-center justify-content-center font-bold flex-column pt-8">
+                <p class="text-5xl">Hier kannst mit mir in Konatk treten!</p>
+                <div class="p-float-label flex flex-column mb-5 w-full md:w-10">
+                    <InputText v-model="email" id="contactemail" required autocomplete="email" />
+                    <label for="contactemail">E-Mail</label>
+                </div>
+                <div class="p-float-label flex flex-column mb-5 w-full md:w-10">
+                    <InputText v-model="thema" id="thema" required />
+                    <label for="thema">Um was geht es?</label>
+                </div>
+                <div class="p-float-label flex flex-column mb-3 w-full md:w-10">
+                    <Textarea v-model="message" id="message" required rows="5" cols="30" class="max-w-full" />
+                    <label for="message">Nachricht</label>
+                </div>
+                <Button label="Senden" type="submit" class="mb-3 w-full md:w-10"></Button>
             </div>
-            <div class="p-float-label flex flex-column mb-5 w-full md:w-10">
-                <InputText v-model="thema" id="thema" required />
-                <label for="thema">Um was geht es?</label>
-            </div>
-            <div class="p-float-label flex flex-column mb-3 w-full md:w-10">
-                <Textarea v-model="message" id="message" required rows="5" cols="30" class="max-w-full" />
-                <label for="message">Nachricht</label>
-            </div>
-            <Button label="Senden" type="submit" class="mb-3 w-full md:w-10"></Button>
-        </div>
-    </form>
+        </form>
     </div>
-    
+
 </template>
 
 <script setup lang="ts">

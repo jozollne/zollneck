@@ -33,11 +33,16 @@ export class CloudController {
     return files;
   }
 
+  @Post('createFolder')
+  async createFolder(@Body() body: { dir: string; name: string }) {
+    return this.cloudService.createFolder(body);
+  }
 
-  @Get('files')
+
+  @Post('getFiles')
   @UseGuards(JwtAuthGuard)
-  async getFiles() {
-    return this.cloudService.getFiles();
+  async getFiles(@Body('dir') dir: string) {
+    return this.cloudService.getFiles(dir);
   }
 
   @Post('download/:fileName')
@@ -50,11 +55,22 @@ export class CloudController {
     }
   }
 
-  @Delete('deleteFromServer/:fileId')
+  @Post('downloadFolder/:folderName')
   @UseGuards(JwtAuthGuard)
-  async deleteFile(@Param('fileId') fileId: string) {
+  async downloadFolder(@Param('folderName') folderName: string, @Res() res: Response, @Body('clientId') clientId: string) {
     try {
-      const result = await this.cloudService.deleteFile(fileId);
+      await this.cloudService.downloadFolder(folderName, res, clientId, this.socketGateway);
+    } catch (error) {
+      throw new HttpException('Fehler beim Herunterladen des Ordners: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @Post('deleteFromServer')
+  async deleteFile(@Body('dir') dir: string) {
+    console.log(dir)
+    try {
+      const result = await this.cloudService.deleteFile(dir);
       return result;
     } catch (error) {
       console.log(error)

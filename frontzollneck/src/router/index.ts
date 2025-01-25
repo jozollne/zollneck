@@ -11,6 +11,7 @@ import { useToast } from 'primevue/usetoast';
 import cloud from '../components/Files/CloudPage.vue'
 import takeScreenshotPage from '@/components/takescreenshot/takeScreenshotPage.vue';
 import Minecraft from '@/components/Minecraft/MinecraftPage.vue'
+import PortfolioPage from '@/components/HomePages/PortfolioPage.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,11 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomePage,
+    },
+    {
+      path: '/cv',
+      name: 'portfolio',
+      component: PortfolioPage,
     },
     {
       path: '/auth',
@@ -64,7 +70,7 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/apps/cloud',
+      path: '/apps/cloud/:subPath(.*)?',
       name: 'cloud',
       component: cloud,
       meta: { requiresAuth: true }

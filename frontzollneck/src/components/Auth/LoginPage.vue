@@ -32,11 +32,11 @@ const login = async () => {
 <template>
   <form @submit.prevent="login" class="flex flex-column align-items-stretch gap-4 p-2">
     <div class="p-float-label flex flex-column">
-      <InputText v-model="email" id="loginemail" required autocomplete="username" class="w-full" />
+      <InputText v-model="email" id="loginemail" required autocomplete="username" />
       <label for="loginemail">*E-Mail oder Benutzername</label>
     </div>
     <div class="p-float-label flex flex-column">
-      <Password v-model="password" id="loginpassword" required toggleMask :feedback="false" class="w-full" />
+      <Password v-model="password" id="loginpassword" required toggleMask :feedback="false" style="width: max-content;"/>
       <label for="loginpassword">*Passwort</label>
     </div>
     <Button type="submit" label="Anmelden" icon="pi pi-user"></Button>

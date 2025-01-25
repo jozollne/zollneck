@@ -8,15 +8,31 @@
     </template>
   </ConfirmPopup>
   <div class="p-d-flex p-jc-center p-ai-center pt-2">
-    <DataTable :value="files" class="p-col-10" resizableColumns>
+    <DataTable :value="files" class="p-col-10" resizableColumns @row-click="onRowClick">
       <template #header>
         <div class="flex flex-wrap align-items-center justify-content-between gap-2">
-          <span class="text-xl text-900 font-bold"> Ordner: {{ dir }} </span>
-          <Button @click="getFiles()" label="Aktualisieren" :disabled="activeDownloadOrUpload"></Button>
-          <FileUpload ref="fileUpload" mode="basic" name="demo[]" :maxFileSize="10000000000" @upload="onUpload"
-            :auto="true" chooseLabel="Hochladen" :customUpload="true" @select="onUpload" :multiple="true" />
+          <span class="text-xl text-900 font-bold"> Ordner: {{ dir.replace(/^\/media\/filesystem\/?/, 'home/') }}
+          </span>
+          <Button @click="getFiles(dir)" label="Aktualisieren" :disabled="activeDownloadOrUpload"></Button>
+          <div class="flex flex-wrap align-items-center gap-5">
+            <FileUpload ref="fileUpload" mode="basic" name="demo[]" :maxFileSize="10000000000" @upload="onUpload"
+              :auto="true" chooseLabel="Hochladen" :customUpload="true" @select="onUpload" :multiple="true" />
+            <Button label="Ordner erstellen" icon="pi pi-file" @click="addFolder()"></Button>
+          </div>
         </div>
       </template>
+      <Column>
+        <template #body="{ data }">
+          <i v-if="!data.isFile" class="pi pi-folder" style="font-size: 1.5em"></i>
+          <i v-else class="pi pi-file" style="font-size: 1.5em"></i>
+        </template>
+        <template #header>
+          <div v-if="dir !== '/media/filesystem'" class="flex gap-2">
+            <i class="pi pi-arrow-left pr-3" style="cursor: pointer;" @click="goBack"></i>
+            <i class="pi pi-home" style="cursor: pointer;" @click="goHome"></i>
+          </div>
+        </template>
+      </Column>
       <Column :style="{ width: '1100px' }" field="name" header="Dateiname"></Column>
       <Column :style="{ width: '110px' }" field="size" header="Größe"></Column>
       <Column :style="{ width: '240px' }" field="created" header="Erstellt"></Column>
@@ -31,11 +47,12 @@
       </Column>
       <Column :style="{ width: '85px' }">
         <template #body="{ data }">
-          <Button @click="onDelete(data.name, $event)" icon="pi pi-trash"
+          <Button @click="onDelete(data, $event)" icon="pi pi-trash"
             :disabled="data.downloading || data.uploading"></Button>
         </template>
       </Column>
     </DataTable>
+
   </div>
 </template>
 
@@ -51,17 +68,23 @@ import { io } from 'socket.io-client';
 import { Socket } from 'socket.io-client';
 import { useAuthStore } from '@/stores/AuthStore';
 import { useConfirm } from "primevue/useconfirm";
+import { useRouter, useRoute } from 'vue-router';
 
 let client: Socket;
 
+const router = useRouter();
+const route = useRoute();
 const confirm = useConfirm();
 const authStore = useAuthStore()
 const toast = useToast();
 const cloudStore = useCloudStore();
-const dir = ref("/")
+const dir = ref(route.params.subPath ? `/media/filesystem/${route.params.subPath}` : '/media/filesystem');
 const files = ref<{ name: string, path: string, size: string, created: Date | String, downloading: boolean, uploading: boolean, progress: number }[]>([]);
 const fileUpload: Ref = ref(null);
 const activeDownloadOrUpload = ref(false)
+
+const test = () => {
+}
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
   if (activeDownloadOrUpload.value) {
@@ -70,6 +93,7 @@ const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     return message;
   }
 };
+
 onMounted(async () => {
   window.addEventListener('beforeunload', handleBeforeUnload);
   client = io('wss://zollneck.de', { path: '/socket.io', transports: ['websocket'] });
@@ -79,7 +103,7 @@ onMounted(async () => {
       file.progress = Math.round(data.progress);
     }
   });
-  getFiles()
+  getFiles(dir.value)
 });
 
 onUnmounted(() => {
@@ -89,8 +113,45 @@ onUnmounted(() => {
   }
 });
 
-const test = () => {
+const onRowClick = async (event: { data: { name: string; path: string; isFile: boolean } }) => {
+  if (!event.data.isFile) {
+    await navigateToFolder(event.data);
+  }
+};
+
+
+const addFolder = () => {
 }
+
+const updateDirAndGetFiles = async (newDir: string) => {
+  dir.value = newDir;
+  await getFiles(newDir);
+};
+
+const navigateToFolder = async (file: { name: string; path: string; }) => {
+  const routerPath = file.path.replace('/media/filesystem/', '');
+  router.push(`/apps/cloud/${routerPath}`);
+  dir.value = file.path;
+  await updateDirAndGetFiles(file.path);
+};
+
+
+const goBack = async () => {
+  const pathSegments = dir.value.replace('/media/filesystem/', '').split('/');
+  pathSegments.pop();
+  const newSubPath = pathSegments.join('/');
+  const newDir = newSubPath ? `/media/filesystem/${newSubPath}` : '/media/filesystem';
+  router.push(`/apps/cloud/${newSubPath}`);
+  await updateDirAndGetFiles(newDir);
+};
+
+
+
+const goHome = async () => {
+  router.push({ name: 'cloud' });
+  await updateDirAndGetFiles('/media/filesystem');
+};
+
 
 const onUpload = () => {
   authStore.checkUserToken()
@@ -111,7 +172,8 @@ const onUpload = () => {
           created: "Gearde eben",
           downloading: false,
           uploading: true,
-          progress: 0
+          progress: 0,
+          isFile: true
         };
         files.value.push(newFile);
       }
@@ -120,6 +182,7 @@ const onUpload = () => {
       const formData = new FormData();
       //encodeURIComponent(file.name) = umlaute im dateinamen korigieren
       formData.append('file', file, encodeURIComponent(file.name));
+      formData.append('dir', '/media/filesystem');
       try {
         const response = await cloudStore.uploadFiles(formData, (percentCompleted) => {
           if (fileInProgress) {
@@ -143,7 +206,7 @@ const onUpload = () => {
   }
 };
 
-const onDownload = async (file: { downloading: boolean; name: string; }) => {
+const onDownload = async (file: { downloading: boolean; name: string; isFile: boolean; }) => {
   if (!client || !client.id) {
     toast.add({ severity: 'error', summary: 'Fehler', detail: 'Socket-Verbindung nicht hergestellt', life: 3000 });
     return;
@@ -151,7 +214,12 @@ const onDownload = async (file: { downloading: boolean; name: string; }) => {
   try {
     file.downloading = true;
     activeDownloadOrUpload.value = true;
-    const response = await cloudStore.downloadFile(file.name, client.id);
+    let response;
+    if (file.isFile) {
+      response = await cloudStore.downloadFile(file.name, client.id);
+    } else {
+      response = await cloudStore.downloadFolder(file.name, client.id);
+    }
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
@@ -167,7 +235,8 @@ const onDownload = async (file: { downloading: boolean; name: string; }) => {
   }
 };
 
-const onDelete = async (filename: string, event: any) => {
+
+const onDelete = async (file: { name: string; path: string; }, event: any) => {
   confirm.require({
     target: event.currentTarget,
     group: 'confirmDelete',
@@ -181,13 +250,13 @@ const onDelete = async (filename: string, event: any) => {
     acceptClass: 'p-button-sm',
     accept: async () => {
       try {
-        const response = await cloudStore.deleteFile(filename)
+        const response = await cloudStore.deleteFile(file.path)
         //Löscht die File auch aus dem lokalen array falls gerade erst hochgeladen :)
-        files.value = files.value.filter(f => f.name !== filename);
-        if (response == true) {
-          toast.add({ severity: 'success', summary: filename + ' gelöscht', detail: 'Die Datei ' + filename + ' wurde erfolgreich gelöscht!', life: 3000 });
+        files.value = files.value.filter(f => f.name !== file.name);
+        if (response == HttpStatusCode.Created) {
+          toast.add({ severity: 'success', summary: file.name + ' gelöscht', detail: 'Die Datei ' + file.name + ' wurde erfolgreich gelöscht!', life: 3000 });
         } else {
-          toast.add({ severity: 'error', summary: 'Löschen fehlgeschlagen', detail: 'Das Löschen der Datei ' + filename + ' ist fehlgeschlagen!', life: 3000 });
+          toast.add({ severity: 'error', summary: 'Löschen fehlgeschlagen', detail: 'Das Löschen der Datei ' + file.name + ' ist fehlgeschlagen!', life: 3000 });
         }
       } catch (error: any) {
         checkError(error);
@@ -204,17 +273,18 @@ const onDelete = async (filename: string, event: any) => {
 }
 
 
-const getFiles = async () => {
+const getFiles = async (dir: string) => {
   try {
-    const fileList = await cloudStore.getFiles();
-    files.value = fileList.map((file: { size: any; created: string; }) => ({
+    const fileList = await cloudStore.getFiles(dir);
+    files.value = fileList.map((file: { size: any; created: string; isFile: boolean; }) => ({
       ...file,
       size: formatBytes(Number(file.size)),
       created: formatDate(file.created),
-      downloading: false
+      downloading: false,
+      isFile: file.isFile
     }));
-    if (fileList != "") {
-      toast.add({ severity: 'success', summary: 'Erfolg!', detail: "Datein wurden aktulisiert", life: 3000 });
+    if (files.value.length === 0) {
+      toast.add({ severity: 'info', summary: 'Ordner ist leer', detail: 'Keine Dateien in diesem Ordner!', life: 5000 });
     }
   } catch (error: any) {
     checkError(error);
@@ -253,16 +323,15 @@ const formatBytes = (bytes: number) => {
   }
 };
 
-const checkError = (error: AxiosError) => {
+const checkError = (error: any) => {
   if (error.response) {
     if (error.response.status === HttpStatusCode.Unauthorized) {
       toast.add({ severity: 'error', summary: 'Session abgelaufen!', detail: 'Aktion nicht durchgeführt, bitte lade die Seite neu.', group: 'sessionExpired' });
     } else {
-      toast.add({ severity: 'error', summary: 'Unbehandelter Fehler!', detail: error.message, life: 3000 });
+      toast.add({ severity: 'error', summary: 'Unbehandelter Fehler!', detail: error.response.data.message, life: 3000 });
     }
   } else {
-    console.error(error.message);
-    toast.add({ severity: 'error', summary: 'Fehler', detail: 'Ein unbekannter Fehler ist aufgetreten', life: 3000 });
+    toast.add({ severity: 'error', summary: 'Fehler', detail: 'Ein unbekannter Fehler ist aufgetreten: ' + error.response.data.message, life: 3000 });
   }
 };
 </script>

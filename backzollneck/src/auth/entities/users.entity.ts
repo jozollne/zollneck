@@ -55,4 +55,7 @@ export class Users {
 
   @Column({ type: 'timestamp', nullable: true })
   lastPasswordChange: Date;
+
+  @Column({ type: 'varchar', length: 1000, nullable: false})
+  why: string
 }

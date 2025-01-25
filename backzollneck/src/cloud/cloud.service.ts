@@ -1,9 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { promisify } from 'util';
-import { v4 as uuidv4 } from 'uuid';
+import * as archiver from 'archiver';
 import { createReadStream } from 'fs';
 import { SocketGateway } from 'src/socket.gateway';
 import { Response } from 'express';
@@ -20,24 +18,31 @@ export class CloudService {
   }
 
 
-  async getFiles(): Promise<{ name: string, path: string, size: number, created: Date }[]> {
-    const directoryPath = '/media/filesystem/';
+  async getFiles(dir: string): Promise<{ name: string, path: string, size: number, created: Date, isFile: boolean }[]> {
+    const directoryPath = dir;
     try {
       const files = fs.readdirSync(directoryPath);
       return files.map(file => {
         const filePath = path.join(directoryPath, file);
         const fileStats = fs.statSync(filePath);
+        let size = fileStats.size;
+        if (fileStats.isDirectory()) {
+          size = this.calculateFolderSize(filePath);
+        }
+
         return {
           name: file,
           path: filePath,
-          size: fileStats.size,
+          size: size,
           created: fileStats.birthtime,
+          isFile: !fileStats.isDirectory()
         };
       });
     } catch (err) {
       throw new HttpException('Fehler beim Lesen des Verzeichnisses', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
 
 
   async getFilePath(fileName: string): Promise<{ filePath: string }> {
@@ -66,20 +71,108 @@ export class CloudService {
     });
   }
 
-  async deleteFile(fileId: string) {
-    const tempDir = '/media/filesystem';
-    const files = fs.readdirSync(tempDir);
-    if (files.find(f => f.startsWith(fileId))) {
-      const file = files.find(f => f.startsWith(fileId));
-      const filePath = file ? path.join(tempDir, file) : null;
-      try {
-        fs.promises.unlink(filePath);
-        return true
-      } catch (error) {
-        throw new HttpException(`Datei konnte nicht vom Server gelöscht werden: ${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
+  async downloadFolder(fileName: string, res: Response, clientId: string, socketGateway: SocketGateway) {
+    const folderPath = path.join('/media/filesystem', fileName);
+    const tempZipPath = path.join('/media/tempfiles', `${fileName}.zip`);
+
+    if (!fs.existsSync(folderPath) || !fs.statSync(folderPath).isDirectory()) {
+      throw new HttpException('Ordner existiert nicht oder ist kein Verzeichnis.', HttpStatus.BAD_REQUEST);
+    }
+
+    const output = fs.createWriteStream(tempZipPath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+
+    archive.on('error', (err) => {
+      throw new HttpException('Fehler beim Erstellen des Archivs: ' + err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    });
+
+    let totalBytes = 0;
+    let processedBytes = 0;
+
+    totalBytes = this.calculateFolderSize(folderPath);
+
+    archive.on('data', (chunk) => {
+      processedBytes += chunk.length;
+      const percentage = (processedBytes / totalBytes) * 50;
+      socketGateway.handleDownloadProgress(clientId, { fileName, progress: percentage });
+    });
+
+    archive.pipe(output);
+    archive.directory(folderPath, fileName);
+    archive.finalize();
+
+    output.on('close', () => {
+      console.log(`ZIP-Datei wurde erfolgreich erstellt: ${tempZipPath}`);
+      let downloadedBytes = 0;
+      const zipFileSize = fs.statSync(tempZipPath).size;
+
+      socketGateway.handleDownloadProgress(clientId, { fileName, progress: 50 });
+
+      res.setHeader('Content-Disposition', `${fileName}.zip`);
+
+      const readStream = fs.createReadStream(tempZipPath);
+      readStream.on('data', (chunk) => {
+        downloadedBytes += chunk.length;
+        const downloadPercentage = 50 + ((downloadedBytes / zipFileSize) * 50);
+        socketGateway.handleDownloadProgress(clientId, { fileName, progress: downloadPercentage });
+      });
+
+      readStream.pipe(res);
+
+      readStream.on('end', () => {
+        socketGateway.handleDownloadProgress(clientId, { fileName, progress: 100 });
+        fs.unlink(tempZipPath, (err) => {
+          if (err) {
+            console.error('Fehler beim Löschen der temporären Datei:', err);
+          }
+        });
+      });
+    });
+  }
+
+  createFolder = async (body: { dir: string; name: string }) => {
+    try {
+      const newFolderPath = path.join(body.dir, body.name);
+
+      if (!fs.existsSync(newFolderPath)) {
+        await fs.promises.mkdir(newFolderPath, { recursive: true });
+        return HttpStatus.CREATED
+      } else {
+        throw new HttpException(`Der Ordner '${newFolderPath}' existiert bereits.`, HttpStatus.CONFLICT);
       }
-    } else {
-      throw new HttpException(`Datei konnte nicht vom Server gelöscht werden`, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      throw new HttpException(`Fehler beim erstellen des Ordners: ` + error, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  };
+
+  calculateFolderSize = (dir: string) => {
+    const files = fs.readdirSync(dir);
+    let size = 0;
+    files.forEach((file) => {
+      const filePath = path.join(dir, file);
+      const stats = fs.statSync(filePath);
+      if (stats.isDirectory()) {
+        size += this.calculateFolderSize(filePath);
+      } else {
+        size += stats.size;
+      }
+    });
+    return size;
+  };
+
+  async deleteFile(filePath: string) {
+    try {
+      const stats = fs.statSync(filePath);
+
+      if (stats.isDirectory()) {
+        await fs.promises.rm(filePath, { recursive: true, force: true });
+        return HttpStatus.CREATED
+      } else {
+        await fs.promises.unlink(filePath);
+        return HttpStatus.CREATED
+      }
+    } catch (error) {
+      throw new HttpException(`Datei oder Ordner konnte nicht vom Server gelöscht werden: ${error}`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

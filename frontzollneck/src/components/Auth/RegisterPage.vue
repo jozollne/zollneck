@@ -11,10 +11,11 @@ const username = ref('');
 const firstName = ref('');
 const lastName = ref('');
 const toast = useToast();
+const why = ref('');
 
 const register = async () => {
   try {
-    await authStore.registerUser(email.value.toLowerCase(), password.value, username.value.toLowerCase(), firstName.value.toLowerCase(),lastName.value.toLowerCase())
+    await authStore.registerUser(email.value.toLowerCase(), password.value, username.value.toLowerCase(), firstName.value.toLowerCase(), lastName.value.toLowerCase(), why.value)
     toast.add({ severity: 'success', summary: 'Regristrierung erfolgreich', detail: "Bitte einen Admin um Aktivierung des Accounts", life: 3000 });
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -28,34 +29,42 @@ const register = async () => {
 </script>
 
 <template>
-  <form @submit.prevent="register" class="flex flex-column align-items-stretch gap-4 p-2">
-    <div class="p-float-label flex flex-column">
-      <InputText v-model="firstName" id="firstName" />
-      <label for="firstName">Vorname</label>
-    </div>
-    <div class="p-float-label flex flex-column">
-      <InputText v-model="lastName" id="lastName" />
-      <label for="lastName">Nachname</label>
-    </div>
-    <div class="p-float-label flex flex-column">
-      <InputText v-model="username" id="username" />
-      <label for="username">*Benutzername</label>
-    </div>
-    <div class="p-float-label flex flex-column">
-      <InputText v-model="email" id="registeremail" autocomplete="username" required />
-      <label for="registeremail">*E-Mail</label>
-    </div>
-    <div class="p-float-label flex flex-column">
-      <Password v-model="password" id="registerpassword" required toggleMask promptLabel="Wähle ein Passwort"
-        weakLabel="Schwach" mediumLabel="Mittel" strongLabel="Stark" />
-      <label for="registerpassword">*Passwort</label>
-    </div>
-    <!-- <div class="p-float-label flex flex-column">
+  <div>
+    <form @submit.prevent="register" class="flex flex-column align-items-stretch gap-4 p-2">
+      <div class="p-float-label flex flex-column">
+        <InputText v-model="firstName" id="firstName" />
+        <label for="firstName">Vorname</label>
+      </div>
+      <div class="p-float-label flex flex-column">
+        <InputText v-model="lastName" id="lastName" />
+        <label for="lastName">Nachname</label>
+      </div>
+      <div class="p-float-label flex flex-column">
+        <InputText v-model="username" id="username" />
+        <label for="username">*Benutzername</label>
+      </div>
+      <div class="p-float-label flex flex-column">
+        <InputText v-model="email" id="registeremail" autocomplete="username" required />
+        <label for="registeremail">*E-Mail</label>
+      </div>
+      <div class="p-float-label flex flex-column">
+        <Password v-model="password" id="registerpassword" required toggleMask promptLabel="Wähle ein Passwort"
+          weakLabel="Schwach" mediumLabel="Mittel" strongLabel="Stark" style="width: max-content;" />
+        <label for="registerpassword">*Passwort</label>
+      </div>
+      <div class="p-float-label flex flex-column">
+        <InputText v-model="why" id="why" required/>
+        <label for="why">*Warum die Registrierung?</label>
+      </div>
+      <!-- <div class="p-float-label flex flex-column">
       <Password v-model="retypePassword" id="retypePassword" required toggleMask :feedback="false" />
       <label for="retypePassword">*Passwort</label>
     </div> -->
-    <Button type="submit" label="Registrieren" icon="pi pi-user-plus"></Button>
-  </form>
+      <Button type="submit" label="Registrieren" icon="pi pi-user-plus"></Button>
+    </form>
+  </div>
 </template>
+
+
 
 <style scoped></style>

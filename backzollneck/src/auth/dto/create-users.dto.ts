@@ -24,4 +24,7 @@ export class CreateUserDto {
 
   @Length(1, 10)
   role: string;
+
+  @Length(1, 1000)
+  why: string;
 }

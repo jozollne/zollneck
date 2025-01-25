@@ -19,7 +19,7 @@ export class AuthService {
     return bcrypt.hash(password, salt);
   }
 
-  async create(email: string, password: string, username: string, firstName: string, lastName: string): Promise<Users> {
+  async create(email: string, password: string, username: string, firstName: string, lastName: string, why: string): Promise<Users> {
     if (!email || !password || !username) {
       throw new HttpException('E-Mail, Passwort und Benutzername sind erforderlich', HttpStatus.BAD_REQUEST);
     }
@@ -60,7 +60,8 @@ export class AuthService {
       lastName,
       role: 'user',
       status: 'down',
-      createdAt: new Date()
+      createdAt: new Date(),
+      why,
     });
   
     return this.usersRepository.save(user);

@@ -6,15 +6,17 @@ export const useCloudStore = defineStore('cloud', {
     state: () => ({
     }),
     actions: {
-        async getFiles() {
+        async getFiles(dir: string) {
             try {
-                const response = await axios.get('https://zollneck.de/api/cloud/files', {
+                const response = await axios.post('https://zollneck.de/api/cloud/getFiles', {
+                    dir: dir
+                }, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('userToken')}`
                     }
                 });
                 return response.data;
-            } catch (error) {
+            } catch (error: any) {
                 throw error;
             }
         },
@@ -30,7 +32,23 @@ export const useCloudStore = defineStore('cloud', {
                     }
                 });
                 return response;
-            } catch (error) {
+            } catch (error: any) {
+                throw error;
+            }
+        },
+
+        async downloadFolder(folderName: string, clientId: string) {
+            try {
+                const response = await axios.post(`https://zollneck.de/api/cloud/downloadFolder/${folderName}`, {
+                    clientId: clientId
+                }, {
+                    responseType: 'blob',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                    }
+                });
+                return response;
+            } catch (error: any) {
                 throw error;
             }
         },
@@ -48,22 +66,24 @@ export const useCloudStore = defineStore('cloud', {
                     }
                 });
                 return response.data;
-            } catch (error) {
+            } catch (error: any) {
                 throw error;
             }
         },
 
-        async deleteFile(fileName: string) {
+        async deleteFile(dir: string) {
             try {
-                const response = await axios.delete(`https://zollneck.de/api/cloud/deleteFromServer/${fileName}`, {
+                const response = await axios.post(`https://zollneck.de/api/cloud/deleteFromServer`, {
+                    dir: dir
+                }, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('userToken')}`
                     }
                 });
                 return response.data;
-            } catch (error) {
+            } catch (error: any) {
                 throw error;
             }
-        }              
+        }
     },
 });
