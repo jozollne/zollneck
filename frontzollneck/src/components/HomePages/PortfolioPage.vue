@@ -17,7 +17,7 @@
                     <img src="@/icons/c-sharp-16-svgrepo-com.svg" alt="C# Icon" class="w-2rem xl:w-4rem" />
                     <span class="pt-2 sm:pt-0 sm:pl-2 text-xs xl:text-3xl font-bold">3+ Years</span>
                 </div>
-                <div class="icon-container flex flex-column sm:flex-row align-items-center">
+                <div class="icon-container flex flex-column sm:flex-row align-items-center">https://testpages.eviltester.com/styled/auth/basic-auth-results.html
                     <img src="@/icons/javascript-16-svgrepo-com.svg" alt="JavaScript Icon" class="w-2rem xl:w-4rem" />
                     <span class="pt-2 sm:pt-0 sm:pl-2 text-xs xl:text-3xl font-bold">2+ Years</span>
                 </div>
@@ -66,7 +66,7 @@
                         schweren
                         Herzens vom AWI
                         verabschieden.
-                        Deshalb bin ich schon auf der Suche nach einem neuen Job, der mir genauso viel Spaß macht und
+                        Deshalb bin ich schon jetzt auf der Suche nach einem neuen Job, der mir genauso viel Spaß macht und
                         bei
                         dem ich einen wichtigen Beitrag leisten kann.
                     </p>
@@ -118,7 +118,7 @@
                 <div class="flex align-content-start">
                     <Image src="/swicthConnection.png" width="850" preview class="hidden xl:block"></Image>
                     <div class="md:pl-7">
-                        <p class="text-base md:text-5xl font-semibold">Ein cooles Projekt im Bleibejahr war es, ein
+                        <p class="text-base md:text-5xl font-semibold">Ein spannendes Projekt im Bleibejahr war ein
                             sicheres
                             Front- und Backend zur Verwaltung der Internetverbindung auf der FS-Heincke zu bauen.
                             Mit dieser Seite können autorisierte Crew-Mitglieder die Internetverbindung des

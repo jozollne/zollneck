@@ -55,7 +55,7 @@
         </div>
         <form @submit.prevent="sendContact" class="flex flex-column align-items-stretch gap-4 p-2">
             <div id="kontakt" class="flex align-items-center justify-content-center font-bold flex-column pt-8">
-                <p class="text-5xl">Hier kannst mit mir in Konatk treten!</p>
+                <p class="text-5xl">Hier kannst du mit mir in Kontakt treten!</p>
                 <div class="p-float-label flex flex-column mb-5 w-full md:w-10">
                     <InputText v-model="email" id="contactemail" required autocomplete="email" />
                     <label for="contactemail">E-Mail</label>
