@@ -12,6 +12,7 @@ import cloud from '../components/Files/CloudPage.vue'
 import takeScreenshotPage from '@/components/takescreenshot/takeScreenshotPage.vue';
 import Minecraft from '@/components/Minecraft/MinecraftPage.vue'
 import PortfolioPage from '@/components/HomePages/PortfolioPage.vue';
+import Pocker from '@/components/Pocker/PockerPage.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -76,9 +77,15 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/server/minecraft',
+      path: '/apps/minecraft',
       name: 'minecraft',
       component: Minecraft,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/apps/pocker',
+      name: 'pocker',
+      component: Pocker,
       meta: { requiresAuth: true }
     },
   ]

@@ -36,6 +36,9 @@ import Footer from '@/components/Overlay/Footer.vue'
 import Dialog from 'primevue/dialog'
 import ConfirmPopup from 'primevue/confirmpopup'
 import ConfirmService from 'primevue/confirmationservice'
+import Calendar from 'primevue/calendar';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
 
 const app = createApp(Overlay)
 const pinia = createPinia()
@@ -71,6 +74,9 @@ app.component('FileUpload', FileUpload)
 app.component('Button', Button);
 app.component('InputText', InputText);
 app.component('Toast', Toast);
+app.component('Calendar', Calendar);
+app.component('DataTable', DataTable);
+app.component('Column', Column);
 
 const savedToken = localStorage.getItem('userToken');
 if (savedToken) {

@@ -10,6 +10,8 @@ import { Contact } from './contact/entities/contact.entity';
 import { ScreenshotModule } from './screenshot/screenshot.module';
 import { MinecraftModule } from './minecraft/minecraft.module';
 import { CommandLog } from './minecraft/entities/commandLog.entity';
+import { PockerModule } from './pocker/pocker.module';
+import { Pocker } from './pocker/entities/history.entity';
 
 @Module({
   imports: [
@@ -20,7 +22,7 @@ import { CommandLog } from './minecraft/entities/commandLog.entity';
       username: 'jozollne',
       password: process.env.DB_PASSWORD,
       database: 'zollneckdb',
-      entities: [Users, Contact, CommandLog],
+      entities: [Users, Contact, CommandLog, Pocker],
       synchronize: true,
     }),
     AuthModule,
@@ -30,6 +32,7 @@ import { CommandLog } from './minecraft/entities/commandLog.entity';
     ContactModule,
     ScreenshotModule,
     MinecraftModule,
+    PockerModule,
   ],
 
 })
