@@ -270,7 +270,7 @@ const showHistory = async () => {
                     </div>
                     ---⏱️ {{ formatSeconds(totalFilteredTimeSpend) }} Time spend ⏱️
                 </div>
-                <InputText v-model="filters.global.value" placeholder="Filter" />
+                <InputText v-model="filters.global.value" placeholder="Filter" class="w-3 lg:w-1"/>
             </div>
         </template>
 
