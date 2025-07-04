@@ -209,15 +209,14 @@ const konvertorItems = computed(() => {
     }
 
 
-    if (authStore.isAuthenticated) {
-        items.push({
-            label: 'Pocker',
-            icon: 'pi pi-money-bill',
-            command: () => {
-                routerStore.goToPocker();
-            }
-        });
-    }
+    items.push({
+        label: 'Pocker',
+        icon: 'pi pi-money-bill',
+        command: () => {
+            routerStore.goToPocker();
+        }
+    });
+
 
     return items;
 });

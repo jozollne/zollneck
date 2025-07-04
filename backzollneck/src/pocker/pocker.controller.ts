@@ -22,8 +22,6 @@ export class PockerController {
   }
 
   @Get('get-all')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('pocker')
   getAll() {
     return this.pockerService.getAll();
   }

@@ -119,13 +119,18 @@ router.beforeEach(async (to, from, next) => {
       Array.isArray(requiredRoles) &&
       !authStore.userRoles.some(role => requiredRoles.includes(role))
     ) {
+      if (to.name === 'pocker') {
+        next();
+        return;
+      }
+
       toast.add({
         severity: 'error',
         summary: 'Zugriff verweigert',
-        detail: `Du hast keine Berechtigung, auf "${functionStore.oldRoute}" zuzugreifen. Sag mir bescheid, wenn du Zugriff benötigst.`,
+        detail: `Du hast keine Berechtigung, auf "${functionStore.oldRoute}" zuzugreifen.`,
         life: 4000,
       });
-      next(false)
+      next(false);
       return;
     }
     next();

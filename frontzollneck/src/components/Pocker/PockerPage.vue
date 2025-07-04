@@ -2,9 +2,12 @@
 import { usePockerStore } from '@/stores/PockerStore';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import { useAuthStore } from '@/stores/AuthStore';
 
 const toast = useToast();
 const pockerStore = usePockerStore();
+const authStore = useAuthStore();
 
 const dateJoin = ref<Date>();
 const dateLeave = ref<Date>(new Date());
@@ -16,9 +19,19 @@ const loadingLocation = ref(false);
 const showHistoryConst = ref(false);
 const gamemode = ref();
 const fun = ref();
+const filters = ref();
+filters.value = {
+    global: { value: '', matchMode: FilterMatchMode.CONTAINS }
+};
 
 onMounted(() => {
     pockerStore.getAll();
+
+    if (!authStore.userRoles.includes('pocker')) {
+        showHistory();
+        toast.add({ severity: 'error', summary: "Fehler!", detail: "Du hast keine Rechte um Einträge zu erstellen ;(", life: 30000 });
+        return;
+    }
 
     if (navigator.geolocation) {
         loadingLocation.value = true;
@@ -88,6 +101,77 @@ onMounted(() => {
     }
 });
 
+const filteredEntries = computed(() => {
+    if (!filters.value) return pockerStore.entries;
+
+    return pockerStore.entries.filter(entry => {
+        const f = filters.value;
+
+        if (f.global?.value) {
+            const search = f.global.value.toLowerCase();
+            if (
+                !(entry.location?.toLowerCase().includes(search) ||
+                    entry.gamemode?.toLowerCase().includes(search) ||
+                    String(entry.profit).includes(search) ||
+                    String(entry.fun).includes(search) ||
+                    String(entry.buyIn).includes(search) ||
+                    String(entry.payOut).includes(search) ||
+                    (entry.dateJoin && formatDate(entry.dateJoin).includes(search)))
+            ) {
+                return false;
+            }
+        }
+
+        if (f.location?.constraints?.[0]?.value) {
+            const val = f.location.constraints[0].value.toLowerCase();
+            if (!entry.location?.toLowerCase().startsWith(val)) return false;
+        }
+
+        if (f.gamemode?.constraints?.[0]?.value) {
+            const val = f.gamemode.constraints[0].value.toLowerCase();
+            if (!entry.gamemode?.toLowerCase().startsWith(val)) return false;
+        }
+
+        if (f.profit?.constraints?.[0]?.value != null) {
+            if (entry.profit !== f.profit.constraints[0].value) return false;
+        }
+
+        if (f.fun?.constraints?.[0]?.value != null) {
+            if (entry.fun !== f.fun.constraints[0].value) return false;
+        }
+
+        if (f.buyIn?.constraints?.[0]?.value != null) {
+            if (entry.buyIn !== f.buyIn.constraints[0].value) return false;
+        }
+
+        if (f.payOut?.constraints?.[0]?.value != null) {
+            if (entry.payOut !== f.payOut.constraints[0].value) return false;
+        }
+
+        if (f.dateJoin?.constraints?.[0]?.value != null) {
+            const filterDate = new Date(f.dateJoin.constraints[0].value).toDateString();
+            if (!entry.dateJoin) return false;
+            const entryDate = new Date(entry.dateJoin).toDateString();
+            if (entryDate !== filterDate) return false;
+        }
+
+        return true;
+    });
+});
+
+const totalFilteredProfit = computed(() => {
+    return filteredEntries.value.reduce((acc, entry) => acc + (entry.profit ?? 0), 0);
+});
+
+const totalFilteredTimeSpend = computed(() => {
+    return filteredEntries.value.reduce((acc, entry) => acc + (entry.timeSpend ?? 0), 0);
+});
+
+const clearFilter = () => {
+    filters.value.global.value = '';
+};
+
+
 
 const addDay = async () => {
     try {
@@ -110,7 +194,7 @@ const addDay = async () => {
             });
         } else if (response.profit < 0) {
             toast.add({
-                severity: 'warn',
+                severity: 'error',
                 summary: 'Tag hinzugefügt!',
                 detail: `Du hast heute ${formatEuro(response.profit)} in ${formatSeconds(response.timeSpend)} verloren.`,
                 life: 7000
@@ -127,6 +211,8 @@ const addDay = async () => {
     } catch (error: any) {
         if (error.response.status == 401) {
             toast.add({ severity: 'error', summary: 'Session ungültig!', detail: 'Die Sitzung ist abgelaufen. Melde dich erneut an.', life: 7000 });
+        } else if (error.response.status == 403) {
+            toast.add({ severity: 'error', summary: "Fehler!", detail: "Du hast keine Rechte um Einträge zu erstellen ;(", life: 7000 });
         } else {
             toast.add({ severity: 'error', summary: "Fehler!", detail: error.response.data.message, life: 7000 });
         }
@@ -168,21 +254,28 @@ function formatEuro(amount: number | null): string {
 const showHistory = async () => {
     showHistoryConst.value = true;
 }
-
-const latestEntry = computed(() => {
-    return pockerStore.entries.length > 0 ? pockerStore.entries[0] : null;
-});
-
-const dialogHeader = computed(() => {
-    if (!latestEntry.value) return 'Poker History';
-
-    return `Gamble history | 🪙 ${formatEuro(latestEntry.value.allTimeProfit)} Profit | ⏱️ ${formatSeconds(latestEntry.value.allTimeTimeSpend)} Time spend`;
-});
 </script>
 
 <template>
-    <Dialog v-model:visible="showHistoryConst" modal :header="dialogHeader" class="w-11">
-        <DataTable :value="pockerStore.entries" stripedRows scrollable scrollHeight="60vh" resizableColumns
+    <Dialog v-model:visible="showHistoryConst" modal class="w-11">
+        <template #header>
+            <div class="hidden md:flex flex-wrap gap-3 align-items-center justify-content-between w-full">
+                <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined @click="clearFilter" />
+                <div class="flex flex-col text-sm xl:text-3xl font-bold">
+                    <div class="text-green-500" v-if="totalFilteredProfit > 0">
+                        🪙 {{ formatEuro(totalFilteredProfit) }} Profit 🪙
+                    </div>
+                    <div class="text-red-500" v-if="totalFilteredProfit < 0">
+                        🪙 {{ formatEuro(totalFilteredProfit) }} Profit 🪙
+                    </div>
+                    ---⏱️ {{ formatSeconds(totalFilteredTimeSpend) }} Time spend ⏱️
+                </div>
+                <InputText v-model="filters.global.value" placeholder="Filter" />
+            </div>
+        </template>
+
+
+        <DataTable :value="filteredEntries" stripedRows scrollable scrollHeight="60vh" resizableColumns
             columnResizeMode="fit">
 
             <Column sortable field="dateJoin" header="Datum">
@@ -205,7 +298,15 @@ const dialogHeader = computed(() => {
 
             <Column sortable field="profit" header="Profit">
                 <template #body="{ data }">
-                    {{ formatEuro(data.profit) }}
+                    <div class="text-green-500" v-if="data.profit > 0">
+                        {{ formatEuro(data.profit) }}
+                    </div>
+                    <div class="text-red-500" v-if="data.profit < 0">
+                        {{ formatEuro(data.profit) }}
+                    </div>
+                    <div class="text-yellow-500" v-if="data.profit == 0">
+                        {{ formatEuro(data.profit) }}
+                    </div>
                 </template>
             </Column>
 
@@ -214,7 +315,6 @@ const dialogHeader = computed(() => {
                     {{ formatSeconds(data.timeSpend) || '-' }}
                 </template>
             </Column>
-
 
             <Column sortable field="location" header="Location">
                 <template #body="{ data }">
@@ -236,7 +336,6 @@ const dialogHeader = computed(() => {
         </DataTable>
     </Dialog>
 
-
     <div class="flex align-items-center justify-content-center" style="height: 84vh">
         <div class="card p-4 shadow-4 border-round col-12 col-md-8 col-lg-6">
             <div class="flex align-items-center justify-content-center gap-5 text-center">
@@ -255,7 +354,8 @@ const dialogHeader = computed(() => {
                         <label for="payOut">Pay Out</label>
                     </span>
                     <span class="p-float-label md:w-3 mb-4">
-                        <InputText v-model="location" id="location" class="w-full" :disabled="loadingLocation" ></InputText>
+                        <InputText v-model="location" id="location" class="w-full" :disabled="loadingLocation">
+                        </InputText>
                         <label for="location">Location</label>
                     </span>
                     <span class="p-float-label md:w-3 mb-4">
@@ -291,7 +391,3 @@ const dialogHeader = computed(() => {
     background-color: var(--surface-b);
 }
 </style>
-
-//add fun scaling
-//add gamemode selector with icons only
-//make dateJoin and dateLeave more acurate

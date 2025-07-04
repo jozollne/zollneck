@@ -7,4 +7,8 @@ export interface PockerEntry {
     dateJoin: string | null;
     timeSpend: number | null;
     allTimeTimeSpend: number | null;
+    location: string | null;
+    gamemode: string;
+    fun: number;
+    dateLeave: string | null;
 }

@@ -13,7 +13,7 @@ export class PockerService {
     if (!Number(buyIn)) {
       throw new BadRequestException('Fehler: Buy In muss eine Zahl sein.');
     }
-    if (!Number(payOut)) {
+    if (isNaN(Number(payOut))) {
       throw new BadRequestException('Fehler: Pay Out muss eine Zahl sein.');
     }
     if (!location || location.length < 3 || location.length > 150) {
