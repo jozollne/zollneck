@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.16.10",
+    "@maxmind/geoip2-node": "^6.1.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/jwt": "^10.2.0",
