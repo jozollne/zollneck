@@ -4,6 +4,8 @@ import axios from 'axios';
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         isAuthenticated: localStorage.getItem('userToken') !== null,
+        userRoles: JSON.parse(localStorage.getItem('userRoles') ?? '[]') as string[],
+        username: localStorage.getItem('username') ?? '',
     }),
     actions: {
         async registerUser(email: string, password: string, username: string, firstName: string, lastName: string, why: string) {
@@ -12,9 +14,8 @@ export const useAuthStore = defineStore('auth', {
                     email, password, username, firstName, lastName, why
                 });
             } catch (error) {
-                // Fehlerbehandlung, falls die Anfrage fehlschlägt oder die Serverantwort einen Fehler anzeigt
                 console.error('Fehler bei der Registrierung:', error);
-                throw error; // Oder eine benutzerfreundliche Fehlermeldung anzeigen
+                throw error;
             }
         },
         
@@ -24,26 +25,48 @@ export const useAuthStore = defineStore('auth', {
                 if (response.data.token) {
                     this.isAuthenticated = true;
                     localStorage.setItem('userToken', response.data.token);
-                    localStorage.setItem('userAccount', response.data.username);
+
+                    const payload = JSON.parse(atob(response.data.token.split('.')[1]));
+                    this.userRoles = payload.roles;
+                    localStorage.setItem('userRoles', JSON.stringify(payload.roles));
+
+                    this.username = payload.username;
+                    localStorage.setItem('username', payload.username);
                 }
             } catch (error) {
                 this.isAuthenticated = false;
                 throw error;
             }
         },
+
         clearUserData() {
             localStorage.removeItem('userToken');
-            localStorage.removeItem('userAccount');
+            localStorage.removeItem('userRoles');
+            localStorage.removeItem('username');
             this.isAuthenticated = false;
+            this.userRoles = [];
+            this.username = '';
         },
+
         async checkUserToken() {
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                this.clearUserData();
+                return false;
+            }
             try {
                 await axios.get('https://zollneck.de/api/auth/check-token', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 this.isAuthenticated = true;
+
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                this.userRoles = payload.roles;
+                localStorage.setItem('userRoles', JSON.stringify(payload.roles));
+
+                this.username = payload.username; 
+                localStorage.setItem('username', payload.username);
+
                 return true;
             } catch {
                 this.clearUserData();

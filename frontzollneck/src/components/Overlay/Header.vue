@@ -54,8 +54,8 @@
                                     image="https://www.freeiconspng.com/thumbs/profile-icon-png/account-profile-user-icon--icon-search-engine-10.png"
                                     class="mr-2" shape="circle" />
                                 <span class="inline-flex flex-column">
-                                    <span class="font-bold">{{ username }}</span>
-                                    <span class="text-sm">User</span>
+                                    <span class="font-bold">{{ authStore.username }}</span>
+                                    <span class="text-sm">{{ authStore.userRoles.join(', ') }}</span>
                                 </span>
                             </button>
                         </template>
@@ -77,11 +77,6 @@ const authStore = useAuthStore();
 const routerStore = useRouterStore();
 const menu = ref();
 
-const username = computed(() => {
-    return localStorage.getItem('userAccount') || '';
-});
-
-
 const userItems = computed(() => {
     const items = [];
 
@@ -91,7 +86,7 @@ const userItems = computed(() => {
             icon: 'pi pi-power-off',
             command: () => {
                 routerStore.logOut();
-                toast.add({ severity: 'success', summary: 'Erfolgreich abgemeldet!', detail: 'Nutzer: "' + username.value + '" wurde erfolgreich abgemeldet!', life: 2000 });
+                toast.add({ severity: 'success', summary: 'Erfolgreich abgemeldet!', life: 2000 });
             }
         },
             {
@@ -212,8 +207,8 @@ const konvertorItems = computed(() => {
             }
         });
     }
-    
-    
+
+
     if (authStore.isAuthenticated) {
         items.push({
             label: 'Pocker',

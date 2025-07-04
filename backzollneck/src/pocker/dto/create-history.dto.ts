@@ -27,4 +27,10 @@ export class CreateHistoryDto {
 
   @Length(1, 150)
   location: string;
+
+  @Length(1, 40)
+  gamemode: string;
+
+  @Length(1, 5)
+  fun: number;
 }

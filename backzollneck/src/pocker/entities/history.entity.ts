@@ -28,7 +28,13 @@ export class Pocker {
 
   @Column({ type: 'float', nullable: true })
   allTimeTimeSpend: number;
-  
+
   @Column({ type: 'varchar', length: 50, nullable: true })
   location: string;
+
+  @Column({ type: 'varchar', length: 40, nullable: false })
+  gamemode: string;
+
+  @Column({ type: 'smallint', nullable: false })
+  fun: number;
 }

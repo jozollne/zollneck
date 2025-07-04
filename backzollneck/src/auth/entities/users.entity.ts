@@ -29,8 +29,8 @@ export class Users {
   @Column({ type: 'varchar', length: 20 })
   status: string;
 
-  @Column({ type: 'varchar', length: 20 })
-  role: string;
+  @Column({ type: 'text', array: true, nullable: false, default: '{}' })
+  roles: string[];
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   profileImage: string;
@@ -56,6 +56,6 @@ export class Users {
   @Column({ type: 'timestamp', nullable: true })
   lastPasswordChange: Date;
 
-  @Column({ type: 'varchar', length: 1000, nullable: false})
+  @Column({ type: 'varchar', length: 1000, nullable: false })
   why: string
 }

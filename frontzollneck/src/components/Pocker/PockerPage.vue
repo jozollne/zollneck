@@ -13,6 +13,8 @@ const payOut = ref();
 const location = ref();
 const loading = ref(false);
 const showHistoryConst = ref(false);
+const gamemode = ref();
+const fun = ref();
 
 onMounted(() => {
     pockerStore.getAll();
@@ -24,6 +26,8 @@ const addDay = async () => {
         const response = await pockerStore.addDay(
             buyIn.value,
             payOut.value,
+            gamemode.value,
+            fun.value,
             dateJoin.value,
             dateLeave.value,
             location.value
@@ -103,14 +107,13 @@ const latestEntry = computed(() => {
 const dialogHeader = computed(() => {
     if (!latestEntry.value) return 'Poker History';
 
-    return `Poker History | 🪙 ${formatEuro(latestEntry.value.allTimeProfit)} Profit | ⏱️ ${formatSeconds(latestEntry.value.allTimeTimeSpend)} Time spend`;
+    return `Gamble history | 🪙 ${formatEuro(latestEntry.value.allTimeProfit)} Profit | ⏱️ ${formatSeconds(latestEntry.value.allTimeTimeSpend)} Time spend`;
 });
 </script>
 
 <template>
-    <Dialog v-model:visible="showHistoryConst" modal :header="dialogHeader" class="w-10">
-        <DataTable :value="pockerStore.entries" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows
-            scrollable scrollHeight="60vh">
+    <Dialog v-model:visible="showHistoryConst" modal :header="dialogHeader" class="w-11">
+        <DataTable :value="pockerStore.entries" stripedRows scrollable scrollHeight="60vh" resizableColumns columnResizeMode="fit">
 
             <Column sortable field="dateJoin" header="Datum">
                 <template #body="{ data }">
@@ -148,14 +151,27 @@ const dialogHeader = computed(() => {
                     {{ data.location || '-' }}
                 </template>
             </Column>
+
+            <Column sortable field="gamemode" header="Gamemode">
+                <template #body="{ data }">
+                    {{ data.gamemode }}
+                </template>
+            </Column>
+
+            <Column sortable field="fun" header="Fun">
+                <template #body="{ data }">
+                    <Rating v-model="data.fun" readonly :cancel="false" />
+                </template>
+            </Column>
         </DataTable>
     </Dialog>
 
 
     <div class="flex align-items-center justify-content-center" style="height: 84vh">
         <div class="card p-4 shadow-4 border-round col-12 col-md-8 col-lg-6">
-            <div class="text-center mb-4">
-                <h1>Pocker history</h1>
+            <div class="flex align-items-center justify-content-center gap-5 text-center">
+                <h1>Gamble history</h1>
+                <Rating v-model="fun" />
             </div>
 
             <form @submit.prevent="addDay">
@@ -169,8 +185,12 @@ const dialogHeader = computed(() => {
                         <label for="payOut">Pay Out</label>
                     </span>
                     <span class="p-float-label md:w-3 mb-4">
-                        <InputText v-model="location" id="Location" class="w-full"></InputText>
+                        <InputText v-model="location" id="location" class="w-full"></InputText>
                         <label for="location">Location</label>
+                    </span>
+                    <span class="p-float-label md:w-3 mb-4">
+                        <InputText v-model="gamemode" id="gamemode" class="w-full"></InputText>
+                        <label for="gamemode">Game</label>
                     </span>
                 </div>
 
@@ -186,8 +206,8 @@ const dialogHeader = computed(() => {
                 </div>
 
                 <div class="flex align-items-center justify-content-center mb-3">
-                    <Button type="submit" :disabled="!buyIn || !payOut" label="Add Day" icon="pi pi-money-bill"
-                        class="md:w-11 mr-2" :loading="loading"></Button>
+                    <Button type="submit" :disabled="!buyIn || !payOut || !location || !gamemode || !fun"
+                        label="Add Day" icon="pi pi-money-bill" class="md:w-11 mr-2" :loading="loading"></Button>
 
                     <Button @click="showHistory" label="History" icon="pi pi-clock" class=""></Button>
                 </div>
@@ -201,3 +221,7 @@ const dialogHeader = computed(() => {
     background-color: var(--surface-b);
 }
 </style>
+
+//add fun scaling
+//add gamemode selector with icons only
+//make dateJoin and dateLeave more acurate

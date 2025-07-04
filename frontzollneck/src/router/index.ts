@@ -74,7 +74,7 @@ const router = createRouter({
       path: '/apps/cloud/:subPath(.*)?',
       name: 'cloud',
       component: cloud,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['cloud'] }
     },
     {
       path: '/apps/minecraft',
@@ -86,7 +86,7 @@ const router = createRouter({
       path: '/apps/pocker',
       name: 'pocker',
       component: Pocker,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, roles: ['pocker'] }
     },
   ]
 })
@@ -94,30 +94,44 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const functionStore = useRouterStore();
-  const toast = useToast(); // Stellen Sie sicher, dass Sie `useToast` importieren
+  const toast = useToast();
 
   if (to.name !== 'auth') {
     functionStore.oldRoute = to.path;
   }
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    await authStore.checkUserToken()
-    if (authStore.isAuthenticated) {
-      next();
-    } else {
+    await authStore.checkUserToken();
+
+    if (!authStore.isAuthenticated) {
       toast.add({
         severity: 'warn',
         summary: 'Authentifizierung erforderlich',
-        detail: 'Für den Zugriff auf: "' + functionStore.oldRoute + '" ist eine Authentifizierung erfoderlich!',
+        detail: `Für den Zugriff auf "${functionStore.oldRoute}" ist eine Authentifizierung erforderlich.`,
         life: 3000
       });
       next({ name: 'auth' });
+      return;
     }
+
+    const requiredRoles = to.meta.roles as string[] | undefined;
+    if (
+      Array.isArray(requiredRoles) &&
+      !authStore.userRoles.some(role => requiredRoles.includes(role))
+    ) {
+      toast.add({
+        severity: 'error',
+        summary: 'Zugriff verweigert',
+        detail: `Du hast keine Berechtigung, auf "${functionStore.oldRoute}" zuzugreifen. Sag mir bescheid, wenn du Zugriff benötigst.`,
+        life: 4000,
+      });
+      next(false)
+      return;
+    }
+    next();
   } else {
     next();
   }
 });
-
-
 
 export default router;

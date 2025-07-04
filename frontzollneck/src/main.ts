@@ -39,6 +39,7 @@ import ConfirmService from 'primevue/confirmationservice'
 import Calendar from 'primevue/calendar';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import Rating from 'primevue/rating';
 
 const app = createApp(Overlay)
 const pinia = createPinia()
@@ -77,6 +78,7 @@ app.component('Toast', Toast);
 app.component('Calendar', Calendar);
 app.component('DataTable', DataTable);
 app.component('Column', Column);
+app.component('Rating', Rating);
 
 const savedToken = localStorage.getItem('userToken');
 if (savedToken) {

@@ -9,7 +9,35 @@ export class PockerService {
     @InjectRepository(Pocker) private pockerRepository: Repository<Pocker>,
   ) { }
 
-  async addDay(buyIn: number, payOut: number, dateJoin: Date | string, dateLeave: Date | string, location: string): Promise<Pocker> {
+  async addDay(buyIn: number, payOut: number, gamemode: string, fun: number, dateJoin: Date | string, dateLeave: Date | string, location: string): Promise<Pocker> {
+    if (!Number(buyIn)) {
+      throw new BadRequestException('Fehler: Buy In muss eine Zahl sein.');
+    }
+    if (!Number(payOut)) {
+      throw new BadRequestException('Fehler: Pay Out muss eine Zahl sein.');
+    }
+    if (!location || location.length < 3 || location.length > 150) {
+      throw new BadRequestException('Fehler: Location muss zwischen 3 und 150 Zeichen lang sein.');
+    }
+    if (!gamemode || gamemode.length < 3 || gamemode.length > 40) {
+      throw new BadRequestException('Fehler: Gamemode muss zwischen 3 und 40 Zeichen lang sein.');
+    }
+    if (!Number.isInteger(fun)) {
+      throw new BadRequestException('Fehler: Fun muss eine ganze Zahl sein.');
+    }
+    if (!Number(fun) || fun < 1 || fun > 5) {
+      throw new BadRequestException('Fehler: Fun muss eine Zahl zwischen 1 und 5 sein.');
+    }
+    if (location && location.length > 150) {
+      throw new BadRequestException('Fehler: Location darf maximal 150 Zeichen lang sein.');
+    }
+    if (dateJoin && typeof dateJoin !== 'string' && !(dateJoin instanceof Date)) {
+      throw new BadRequestException('Fehler: Date Join muss ein gültiges Datum sein.');
+    }
+    if (dateLeave && typeof dateLeave !== 'string' && !(dateLeave instanceof Date)) {
+      throw new BadRequestException('Fehler: Date Leave muss ein gültiges Datum sein.');
+    }
+
     const profit = payOut - buyIn;
 
     let joinDateObj: Date = null;
@@ -67,6 +95,8 @@ export class PockerService {
       timeSpend,
       allTimeTimeSpend,
       location,
+      fun,
+      gamemode,
     });
 
     return this.pockerRepository.save(day);
