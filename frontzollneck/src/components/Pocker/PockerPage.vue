@@ -12,13 +12,82 @@ const buyIn = ref();
 const payOut = ref();
 const location = ref();
 const loading = ref(false);
+const loadingLocation = ref(false);
 const showHistoryConst = ref(false);
 const gamemode = ref();
 const fun = ref();
 
 onMounted(() => {
     pockerStore.getAll();
+
+    if (navigator.geolocation) {
+        loadingLocation.value = true;
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=de`);
+                    const data = await response.json();
+
+                    // Priorisiere Stadtname, fallback auf display_name
+                    location.value =
+                        data.address.city ||
+                        data.address.town ||
+                        data.address.village ||
+                        data.address.hamlet ||
+                        data.address.county ||
+                        data.display_name ||
+                        `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
+
+                    toast.add({
+                        severity: 'success',
+                        summary: 'Standort ermittelt',
+                        detail: `Standort automatisch auf "${location.value}" gesetzt.`,
+                        life: 3000
+                    });
+                    loadingLocation.value = false;
+                } catch (error) {
+                    console.error('Fehler beim Rückwärts-Geocoding:', error);
+                    location.value = `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
+                    toast.add({
+                        severity: 'warn',
+                        summary: 'Geocoding fehlgeschlagen',
+                        detail: 'Standort wurde als Koordinaten gesetzt.',
+                        life: 3000
+                    });
+                    loadingLocation.value = false;
+                }
+            },
+            (error) => {
+                console.error('Geolocation-Fehler:', error);
+                toast.add({
+                    severity: 'warn',
+                    summary: 'Standort nicht verfügbar',
+                    detail: 'Bitte Standortfreigabe aktivieren, um den Standort automatisch einzutragen.',
+                    life: 4000
+                });
+                loadingLocation.value = false;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    } else {
+        console.warn('Geolocation wird von diesem Browser nicht unterstützt.');
+        toast.add({
+            severity: 'warn',
+            summary: 'Nicht unterstützt',
+            detail: 'Dein Browser unterstützt keine Standortbestimmung.',
+            life: 4000
+        });
+        loadingLocation.value = false;
+    }
 });
+
 
 const addDay = async () => {
     try {
@@ -113,7 +182,8 @@ const dialogHeader = computed(() => {
 
 <template>
     <Dialog v-model:visible="showHistoryConst" modal :header="dialogHeader" class="w-11">
-        <DataTable :value="pockerStore.entries" stripedRows scrollable scrollHeight="60vh" resizableColumns columnResizeMode="fit">
+        <DataTable :value="pockerStore.entries" stripedRows scrollable scrollHeight="60vh" resizableColumns
+            columnResizeMode="fit">
 
             <Column sortable field="dateJoin" header="Datum">
                 <template #body="{ data }">
@@ -185,7 +255,7 @@ const dialogHeader = computed(() => {
                         <label for="payOut">Pay Out</label>
                     </span>
                     <span class="p-float-label md:w-3 mb-4">
-                        <InputText v-model="location" id="location" class="w-full"></InputText>
+                        <InputText v-model="location" id="location" class="w-full" :disabled="loadingLocation" ></InputText>
                         <label for="location">Location</label>
                     </span>
                     <span class="p-float-label md:w-3 mb-4">
