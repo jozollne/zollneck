@@ -1,4 +1,4 @@
-import { IsEmail, Length } from 'class-validator';
+import { IsDate, IsEmail, Length } from 'class-validator';
 
 export class CreateContactDto {
   @IsEmail()
@@ -9,4 +9,7 @@ export class CreateContactDto {
 
   @Length(1, 5000)
   message: string;
+
+  @IsDate()
+  time: Date;
 }

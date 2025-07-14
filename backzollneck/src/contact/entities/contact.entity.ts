@@ -13,4 +13,7 @@ export class Contact {
 
   @Column({ type: 'varchar', length: 5000, nullable: false })
   message: string;
+
+  @Column({ type: 'timestamp', nullable: false })
+  time: Date;
 }

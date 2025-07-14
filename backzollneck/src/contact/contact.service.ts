@@ -23,7 +23,8 @@ export class ContactService {
     const contact = this.ContactRepository.create({
       email,
       subject,
-      message
+      message,
+      time: new Date(),
     });
 
     return this.ContactRepository.save(contact);
