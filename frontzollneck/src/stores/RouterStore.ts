@@ -39,7 +39,7 @@ export const useRouterStore = defineStore('functions', {
         goToMinecraft() {
             router.push({ name: 'minecraft' });
         },
-        goToPocker() {
+        goToPoker() {
             router.push({ name: 'poker' });
         },
     }

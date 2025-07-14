@@ -236,10 +236,10 @@ const konvertorItems = computed(() => {
 
   if (authStore.isAuthenticated) {
     items.push({
-      label: "Pocker",
+      label: "Poker",
       icon: "pi pi-money-bill",
       command: () => {
-        routerStore.goToPocker();
+        routerStore.goToPoker();
       },
     });
   }

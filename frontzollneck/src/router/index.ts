@@ -119,7 +119,7 @@ router.beforeEach(async (to, from, next) => {
       Array.isArray(requiredRoles) &&
       !authStore.userRoles.some(role => requiredRoles.includes(role))
     ) {
-      if (to.name === 'pocker') {
+      if (to.name === 'poker') {
         next();
         return;
       }
