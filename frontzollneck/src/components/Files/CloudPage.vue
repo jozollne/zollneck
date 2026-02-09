@@ -1,13 +1,14 @@
 <template>
-  <ConfirmPopup group="confirmDelete">
-    <template #message="slotProps">
-      <div class="flex flex-column align-items-center w-full gap-3 border-bottom-1 surface-border p-3 mb-3 pb-0">
-        <i :class="slotProps.message.icon" class="text-6xl text-primary-500"></i>
-        <p>{{ slotProps.message.message }}</p>
-      </div>
-    </template>
-  </ConfirmPopup>
-  <div class="p-d-flex p-jc-center p-ai-center pt-2">
+  <div>
+    <ConfirmPopup group="confirmDelete">
+      <template #message="slotProps">
+        <div class="flex flex-column align-items-center w-full gap-3 border-bottom-1 surface-border p-3 mb-3 pb-0">
+          <i :class="slotProps.message.icon" class="text-6xl text-primary-500"></i>
+          <p>{{ slotProps.message.message }}</p>
+        </div>
+      </template>
+    </ConfirmPopup>
+    <div class="p-d-flex p-jc-center p-ai-center pt-2">
     <DataTable :value="files" class="p-col-10" resizableColumns @row-click="onRowClick">
       <template #header>
         <div class="flex flex-wrap align-items-center justify-content-between gap-2">
@@ -53,6 +54,7 @@
       </Column>
     </DataTable>
 
+    </div>
   </div>
 </template>
 
@@ -121,6 +123,17 @@ const onRowClick = async (event: { data: { name: string; path: string; isFile: b
 
 
 const addFolder = () => {
+  const folderName = prompt("Gib den Namen des neuen Ordners ein:");
+  if (folderName) {
+    cloudStore.createFolder(folderName, dir.value)
+      .then(() => {
+        toast.add({ severity: 'success', summary: 'Ordner erstellt!', detail: 'Der Ordner ' + folderName + ' wurde erfolgreich erstellt!', life: 3000 });
+        getFiles(dir.value);
+      })
+      .catch((error: any) => {
+        checkError(error);
+      });
+  }
 }
 
 const updateDirAndGetFiles = async (newDir: string) => {
@@ -180,11 +193,9 @@ const onUpload = () => {
       const fileInProgress = files.value.find(f => f.name === file.name && f.uploading);
 
       const formData = new FormData();
-      //encodeURIComponent(file.name) = umlaute im dateinamen korigieren
       formData.append('file', file, encodeURIComponent(file.name));
-      formData.append('dir', '/media/filesystem');
       try {
-        const response = await cloudStore.uploadFiles(formData, (percentCompleted) => {
+        const response = await cloudStore.uploadFiles(formData, dir.value, (percentCompleted) => {
           if (fileInProgress) {
             fileInProgress.progress = Math.round(percentCompleted);
             activeDownloadOrUpload.value = true;
@@ -216,9 +227,9 @@ const onDownload = async (file: { downloading: boolean; name: string; isFile: bo
     activeDownloadOrUpload.value = true;
     let response;
     if (file.isFile) {
-      response = await cloudStore.downloadFile(file.name, client.id);
+      response = await cloudStore.downloadFile(file.name, client.id, dir.value);
     } else {
-      response = await cloudStore.downloadFolder(file.name, client.id);
+      response = await cloudStore.downloadFolder(file.name, client.id, dir.value);
     }
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
@@ -305,19 +316,19 @@ const formatDate = (dateString: string): string => {
 };
 
 const formatBytes = (bytes: number) => {
-  const TB = BigInt(1000000000000);
-  const GB = BigInt(1000000000);
-  const MB = BigInt(1000000);
-  const KB = BigInt(1000);
+  const TB = 1000000000000;
+  const GB = 1000000000;
+  const MB = 1000000;
+  const KB = 1000;
 
   if (bytes >= TB) {
-    return (Number(bytes) / Number(TB)).toFixed(2) + ' TB';
+    return (bytes / TB).toFixed(2) + ' TB';
   } else if (bytes >= GB) {
-    return (Number(bytes) / Number(GB)).toFixed(2) + ' GB';
+    return (bytes / GB).toFixed(2) + ' GB';
   } else if (bytes >= MB) {
-    return (Number(bytes) / Number(MB)).toFixed(2) + ' MB';
+    return (bytes / MB).toFixed(2) + ' MB';
   } else if (bytes >= KB) {
-    return (Number(bytes) / Number(KB)).toFixed(2) + ' KB';
+    return (bytes / KB).toFixed(2) + ' KB';
   } else {
     return bytes + ' Bytes';
   }

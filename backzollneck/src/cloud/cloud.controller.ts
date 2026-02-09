@@ -20,9 +20,15 @@ export class CloudController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('cloud')
   @UseInterceptors(FilesInterceptor('file', 20, {
-    limits: { fileSize: 70 * 1024 * 1024 * 1024 }, //70gb max
+    limits: { fileSize: 100 * 1024 * 1024 * 1024 }, //100gb max
     storage: diskStorage({
-      destination: '/media/filesystem',
+      destination: (req, file, cb) => {
+        const dirFromHeader = req.headers['dir'];
+        console.log('Received dir in request header:', dirFromHeader);
+        const dest = Array.isArray(dirFromHeader) ? dirFromHeader[0] : (dirFromHeader || '/media/filesystem');
+        console.log('Saving file to directory:', dest);
+        cb(null, dest);
+      },
       filename: (req, file, cb) => {
         const decodedName = decodeURIComponent(Buffer.from(file.originalname, 'latin1').toString('utf8'));
         cb(null, decodedName);
@@ -54,9 +60,14 @@ export class CloudController {
   @Post('download/:fileName')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('cloud')
-  async downloadFile(@Param('fileName') fileName: string, @Res() res: Response, @Body('clientId') clientId: string) {
+  async downloadFile(
+    @Param('fileName') fileName: string,
+    @Res() res: Response,
+    @Body('clientId') clientId: string,
+    @Body('dir') dir: string // <-- NEU
+  ) {
     try {
-      await this.cloudService.downloadFile(fileName, res, clientId, this.socketGateway);
+      await this.cloudService.downloadFile(fileName, dir, res, clientId, this.socketGateway); // <-- dir übergeben
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       throw new HttpException('Fehler beim Herunterladen der Datei: ' + errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -66,9 +77,14 @@ export class CloudController {
   @Post('downloadFolder/:folderName')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('cloud')
-  async downloadFolder(@Param('folderName') folderName: string, @Res() res: Response, @Body('clientId') clientId: string) {
+  async downloadFolder(
+    @Param('folderName') folderName: string,
+    @Res() res: Response,
+    @Body('clientId') clientId: string,
+    @Body('dir') dir: string // <-- NEU
+  ) {
     try {
-      await this.cloudService.downloadFolder(folderName, res, clientId, this.socketGateway);
+      await this.cloudService.downloadFolder(folderName, dir, res, clientId, this.socketGateway); // <-- dir übergeben
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       throw new HttpException('Fehler beim Herunterladen des Ordners: ' + errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);

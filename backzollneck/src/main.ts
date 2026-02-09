@@ -50,7 +50,7 @@ async function bootstrap() {
   app.enableCors({
     origin: ['https://zollneck.de', 'http://85.215.77.161:5173', 'http://85.215.77.161:5174'],
     methods: 'GET,POST,DELETE,PUT,PATCH,OPTIONS',
-    allowedHeaders: 'Content-Type,Authorization',
+    allowedHeaders: 'Content-Type,Authorization,dir',
     exposedHeaders: 'Content-Disposition',
   });
 

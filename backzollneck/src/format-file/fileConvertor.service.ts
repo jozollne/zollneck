@@ -40,7 +40,8 @@ export class FormatFileService {
             await fs.promises.chmod(convertedPath, 0o666);
         } catch (error) {
             console.error(`Fehler bei der Konvertierung: ${error}`);
-            throw new HttpException(`Fehler bei der Konvertierung: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new HttpException(`Fehler bei der Konvertierung: ${errorMessage}`, HttpStatus.INTERNAL_SERVER_ERROR);
         } finally {
             await fs.promises.unlink(originalPath);
             console.log("------------------------------");

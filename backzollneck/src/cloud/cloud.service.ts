@@ -45,14 +45,13 @@ export class CloudService {
 
 
 
-  async getFilePath(fileName: string): Promise<{ filePath: string }> {
-    const tempDir = '/media/filesystem';
-    const filePath = path.join(tempDir, fileName);
+  async getFilePath(fileName: string, dir: string): Promise<{ filePath: string }> {
+    const filePath = path.join(dir, fileName);
     return { filePath };
   }
 
-  async downloadFile(fileName: string, res: Response, clientId: string, socketGateway: SocketGateway) {
-    const { filePath } = await this.getFilePath(fileName);
+  async downloadFile(fileName: string, dir: string, res: Response, clientId: string, socketGateway: SocketGateway) {
+    const { filePath } = await this.getFilePath(fileName, dir);
     const fileSize = fs.statSync(filePath).size;
     let downloaded = 0;
 
@@ -71,9 +70,9 @@ export class CloudService {
     });
   }
 
-  async downloadFolder(fileName: string, res: Response, clientId: string, socketGateway: SocketGateway) {
-    const folderPath = path.join('/media/filesystem', fileName);
-    const tempZipPath = path.join('/media/tempfiles', `${fileName}.zip`);
+  async downloadFolder(folderName: string, dir: string, res: Response, clientId: string, socketGateway: SocketGateway) {
+    const folderPath = path.join(dir, folderName);
+    const tempZipPath = path.join('/media/tempfiles', `${folderName}.zip`);
 
     if (!fs.existsSync(folderPath) || !fs.statSync(folderPath).isDirectory()) {
       throw new HttpException('Ordner existiert nicht oder ist kein Verzeichnis.', HttpStatus.BAD_REQUEST);
@@ -94,11 +93,11 @@ export class CloudService {
     archive.on('data', (chunk) => {
       processedBytes += chunk.length;
       const percentage = (processedBytes / totalBytes) * 50;
-      socketGateway.handleDownloadProgress(clientId, { fileName, progress: percentage });
+      socketGateway.handleDownloadProgress(clientId, { fileName: folderName, progress: percentage });
     });
 
     archive.pipe(output);
-    archive.directory(folderPath, fileName);
+    archive.directory(folderPath, folderName);
     archive.finalize();
 
     output.on('close', () => {
@@ -106,21 +105,21 @@ export class CloudService {
       let downloadedBytes = 0;
       const zipFileSize = fs.statSync(tempZipPath).size;
 
-      socketGateway.handleDownloadProgress(clientId, { fileName, progress: 50 });
+      socketGateway.handleDownloadProgress(clientId, { fileName: folderName, progress: 50 });
 
-      res.setHeader('Content-Disposition', `${fileName}.zip`);
+      res.setHeader('Content-Disposition', `${folderName}.zip`);
 
       const readStream = fs.createReadStream(tempZipPath);
       readStream.on('data', (chunk) => {
         downloadedBytes += chunk.length;
         const downloadPercentage = 50 + ((downloadedBytes / zipFileSize) * 50);
-        socketGateway.handleDownloadProgress(clientId, { fileName, progress: downloadPercentage });
+        socketGateway.handleDownloadProgress(clientId, { fileName: folderName, progress: downloadPercentage });
       });
 
       readStream.pipe(res);
 
       readStream.on('end', () => {
-        socketGateway.handleDownloadProgress(clientId, { fileName, progress: 100 });
+        socketGateway.handleDownloadProgress(clientId, { fileName: folderName, progress: 100 });
         fs.unlink(tempZipPath, (err) => {
           if (err) {
             console.error('Fehler beim Löschen der temporären Datei:', err);
