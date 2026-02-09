@@ -9,7 +9,7 @@
       </template>
     </ConfirmPopup>
     <div class="p-d-flex p-jc-center p-ai-center pt-2">
-    <DataTable :value="files" class="p-col-10" resizableColumns @row-click="onRowClick">
+    <DataTable :value="files" class="p-col-10" resizableColumns @row-click="onRowClick" sortField="created" :sortOrder="-1">
       <template #header>
         <div class="flex flex-wrap align-items-center justify-content-between gap-2">
           <span class="text-xl text-900 font-bold"> Ordner: {{ dir.replace(/^\/media\/filesystem\/?/, 'home/') }}
@@ -36,8 +36,11 @@
       </Column>
       <Column :style="{ width: '1100px' }" field="name" header="Dateiname"></Column>
       <Column :style="{ width: '110px' }" field="size" header="Größe"></Column>
-      <Column :style="{ width: '240px' }" field="created" header="Erstellt"></Column>
-      <Column :style="{ width: '170px' }">
+      <Column :style="{ width: '240px' }" field="created" header="Erstellt" sortable>
+      <template #body="{ data }">
+        {{ data.createdFormatted }}
+      </template>
+      </Column>      <Column :style="{ width: '170px' }">
         <template #body="{ data }">
           <div class="flex align-items-center justify-content-center" :style="{ height: '50px' }">
             <Button v-if="!data.downloading && !data.uploading" @click="onDownload(data)" label="Download"
@@ -270,6 +273,7 @@ const onDelete = async (file: { name: string; path: string; }, event: any) => {
           toast.add({ severity: 'error', summary: 'Löschen fehlgeschlagen', detail: 'Das Löschen der Datei ' + file.name + ' ist fehlgeschlagen!', life: 3000 });
         }
       } catch (error: any) {
+        toast.add({ severity: 'error', summary: 'EYYYY!', detail: 'Lade die Seite neu wenn alles hochgeladen ist dann nochmal löschen! ODER DRÜCK AUF AKTUALISIEREN NACHDEM ALLES HOCHGALADEN IST BIN GRAD VIEL ZU MÜDE UM DAS ZU FIXEN LOL', life: 7000 });
         checkError(error);
       } finally {
       }
@@ -290,7 +294,8 @@ const getFiles = async (dir: string) => {
     files.value = fileList.map((file: { size: any; created: string; isFile: boolean; }) => ({
       ...file,
       size: formatBytes(Number(file.size)),
-      created: formatDate(file.created),
+      created: new Date(file.created),           
+      createdFormatted: formatDate(file.created),
       downloading: false,
       isFile: file.isFile
     }));

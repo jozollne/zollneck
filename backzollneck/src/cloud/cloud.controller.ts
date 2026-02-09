@@ -97,7 +97,6 @@ export class CloudController {
   @Roles('cloud')
 
   async deleteFile(@Body('dir') dir: string) {
-    console.log(dir)
     try {
       const result = await this.cloudService.deleteFile(dir);
       return result;
