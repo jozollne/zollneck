@@ -27,7 +27,7 @@ export class FormatFileService {
             throw new HttpException(`Es ist nicht erlaubt, eine ${format}-Datei in eine ${format}-Datei umzuwandeln.`, HttpStatus.BAD_REQUEST);
         }
 
-        fs.writeFileSync(originalPath, file.buffer);
+        fs.writeFileSync(originalPath, new Uint8Array(file.buffer));
 
         try {
             console.log("Beginne Formatierung: " + fileId);

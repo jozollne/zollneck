@@ -58,7 +58,8 @@ export class CloudController {
     try {
       await this.cloudService.downloadFile(fileName, res, clientId, this.socketGateway);
     } catch (error) {
-      throw new HttpException('Fehler beim Herunterladen der Datei: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new HttpException('Fehler beim Herunterladen der Datei: ' + errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -69,7 +70,8 @@ export class CloudController {
     try {
       await this.cloudService.downloadFolder(folderName, res, clientId, this.socketGateway);
     } catch (error) {
-      throw new HttpException('Fehler beim Herunterladen des Ordners: ' + error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new HttpException('Fehler beim Herunterladen des Ordners: ' + errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
