@@ -40,6 +40,8 @@ import Calendar from 'primevue/calendar';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Rating from 'primevue/rating';
+import Slider from 'primevue/slider';
+
 
 const app = createApp(Overlay)
 const pinia = createPinia()
@@ -79,6 +81,7 @@ app.component('Calendar', Calendar);
 app.component('DataTable', DataTable);
 app.component('Column', Column);
 app.component('Rating', Rating);
+app.component('Slider', Slider);
 
 const savedToken = localStorage.getItem('userToken');
 if (savedToken) {

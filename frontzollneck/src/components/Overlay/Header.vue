@@ -206,6 +206,14 @@ const konvertorItems = computed(() => {
       routerStore.goToScreenshot();
     },
   });
+
+  items.push({
+    label: "Password Generator",
+    icon: "pi pi-key",
+    command: () => {
+      routerStore.goToPasswordGenerator();
+    },
+  });
   /* items.push({
       label: 'Test',
       icon: 'pi pi-pencil',
@@ -230,6 +238,16 @@ const konvertorItems = computed(() => {
       icon: "pi pi-box",
       command: () => {
         routerStore.goToMinecraft();
+      },
+    });
+  }
+
+  if (authStore.isAuthenticated) {
+    items.push({
+      label: "ARK Server",
+      icon: "pi pi-server",
+      command: () => {
+        routerStore.goToArk();
       },
     });
   }

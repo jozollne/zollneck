@@ -11,8 +11,11 @@ import { useToast } from 'primevue/usetoast';
 import cloud from '../components/Files/CloudPage.vue'
 import takeScreenshotPage from '@/components/takescreenshot/takeScreenshotPage.vue';
 import Minecraft from '@/components/Minecraft/MinecraftPage.vue'
+import Ark from '@/components/Ark/ArkPage.vue'
 import PortfolioPage from '@/components/HomePages/PortfolioPage.vue';
 import Poker from '@/components/Poker/PokerPage.vue';
+import passwordGeneratorPage from '../components/PasswordGenerator/passwordGenerator.vue';
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,6 +62,12 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
+      path: '/apps/password',
+      name: 'passwordGenerator',
+      component: passwordGeneratorPage,
+      meta: { requiresAuth: false }
+    },
+    {
       path: '/apps/youtube-video-convertor',
       name: 'youtubeVideo',
       component: YoutubeVideoConvertor,
@@ -80,6 +89,12 @@ const router = createRouter({
       path: '/apps/minecraft',
       name: 'minecraft',
       component: Minecraft,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/apps/ark',
+      name: 'ark',
+      component: Ark,
       meta: { requiresAuth: true }
     },
     {

@@ -39,8 +39,14 @@ export const useRouterStore = defineStore('functions', {
         goToMinecraft() {
             router.push({ name: 'minecraft' });
         },
+        goToArk() {
+            router.push({ name: 'ark' });
+        },
         goToPoker() {
             router.push({ name: 'poker' });
         },
+        goToPasswordGenerator() {
+            router.push({ name: 'passwordGenerator' });
+        }
     }
 });

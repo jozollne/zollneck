@@ -10,7 +10,7 @@
     <div class="flex align-items-center justify-content-center" style="height: 79vh">
         <div class="card p-4 shadow-4 border-round col-12 col-md-8 col-lg-6">
             <div class="text-center md:text-lg text-xs mb-4">
-                <h1>Verwaltungsseite vom Minecraftserver zollneck.de</h1>
+                <h1>Verwaltungsseite vom ARK-Server zollneck.de</h1>
             </div>
 
             <div class="flex align-items-center justify-content-center gap-2">
@@ -25,7 +25,8 @@
             <form @submit.prevent="sendCommand(commandToSend)"
                 class="p-fluid flex align-items-center justify-content-center gap-2 mt-5">
                 <span class="p-float-label md:w-full w-9">
-                    <InputText v-model="commandToSend" id="command" required :disabled="!running || loading" class="" />
+                    <InputText v-model="commandToSend" id="command" required :disabled="!running || loading"
+                        autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" class="" />
                     <label for="command">Konsole</label>
                 </span>
                 <Button icon="pi pi-send" :disabled="!running || loading" type="submit"></Button>
@@ -39,7 +40,7 @@
 
                 <Accordion class="w-full">
                     <AccordionTab v-for="command in commandHistory" :key="command.command_id" :header="command.command + '  –  ' + formatDate(command.created_at)">
-                        <p class="m-0">{{"Macher: \"" + command.username + "\" Antwort: " + command.response }}</p>
+                        <p class="m-0">{{ "Macher: \"" + command.username + "\" Antwort: " + command.response }}</p>
                     </AccordionTab>
                 </Accordion>
 
@@ -53,14 +54,14 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
-import { useMinecraftStore } from '@/stores/MinecraftStore';
+import { useArkStore } from '@/stores/ArkStore';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from "primevue/useconfirm";
 import { HttpStatusCode } from 'axios';
 
 
 const confirm = useConfirm();
-const minecraftStore = useMinecraftStore();
+const arkStore = useArkStore();
 const toast = useToast();
 const running = ref();
 const loading = ref();
@@ -92,12 +93,12 @@ const getCommandLog = async () => {
     try {
         loading.value = true;
         commandHistory.value = [];
-        const response = await minecraftStore.getCommandLog();
-        commandHistory.value = response.map((entry: { command_id: number, username:string, command: string; response: string; created_at: string }) => ({
+        const response = await arkStore.getCommandLog();
+        commandHistory.value = response.map((entry: { command_id: number, username: string, command: string; response: string; created_at: string }) => ({
             command_id: entry.command_id,
             username: entry.username,
             command: entry.command,
-            response: removeMinecraftFormatting(entry.response),
+            response: entry.response,
             created_at: entry.created_at
         }));
     } catch (error: any) {
@@ -107,8 +108,8 @@ const getCommandLog = async () => {
     }
 };
 
-const removeMinecraftFormatting = (text: string) => {
-    return text.replace(/§[0-9a-fk-or]/g, '');
+const upcomming = () => {
+    toast.add({ severity: 'info', summary: 'Kommende Features:', detail: "- Mod-Verwaltung\n- Live Logs anzeigen\n- Backup-Verwaltung", life: 5000 });
 };
 
 const formatDate = (dateStr: string) => {
@@ -119,16 +120,12 @@ const formatDate = (dateStr: string) => {
     return d.toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' }) + ' ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
 };
 
-const upcomming = () => {
-    toast.add({ severity: 'info', summary: 'Kommende Features:', detail: "- Weltenverwaltung (Mehrere Welten)\n- Live Logs anzeigen", life: 5000 });
-};
-
 
 const sendCommand = async (command: string) => {
     try {
         loading.value = true;
-        const formattedCommand = command.startsWith('/') ? command.replace('/', '') : command;
-        const response = await minecraftStore.sendCommand(localStorage.getItem('userAccount'), formattedCommand);
+        const trimmedCommand = command.trim();
+        const response = await arkStore.sendCommand(localStorage.getItem('username'), trimmedCommand);
         if (response != "") {
             toast.add({ severity: 'success', summary: 'Befehl ausgeführt! Antwort:', detail: response.output, life: 10000 });
         } else {
@@ -145,14 +142,14 @@ const sendCommand = async (command: string) => {
 
 const getStatus = async () => {
     try {
-        const response = await minecraftStore.getStatus()
+        const response = await arkStore.getStatus()
         if (response.running == true) {
-            toast.add({ severity: 'success', summary: 'Server ist an!', detail: "Der Minecraft Server is an!", life: 3000 });
+            toast.add({ severity: 'success', summary: 'Server ist an!', detail: "Der ARK Server ist an!", life: 3000 });
             running.value = true
             color.value = "success"
             status.value = "Status: Läuft"
         } else {
-            toast.add({ severity: 'success', summary: 'Server ist aus!', detail: "Der Minecraft Server ist aus!", life: 3000 });
+            toast.add({ severity: 'success', summary: 'Server ist aus!', detail: "Der ARK Server ist aus!", life: 3000 });
             color.value = "danger"
             running.value = false
             status.value = "Status: Aus"
@@ -164,14 +161,14 @@ const getStatus = async () => {
 
 const startServer = async () => {
     showConfirmationPopup(
-        'Willst du den Minecraft-Server wirklich starten?',
+        'Willst du den ARK-Server wirklich starten?',
         async () => {
             try {
                 loading.value = true;
-                toast.add({ severity: 'info', summary: 'Wird gestartet!', detail: 'Der Minecraft Server wird nun gestartet', life: 3000 });
-                const response = await minecraftStore.startServer();
+                toast.add({ severity: 'info', summary: 'Wird gestartet!', detail: 'Der ARK Server wird nun gestartet', life: 3000 });
+                const response = await arkStore.startServer();
                 if (!response.success) {
-                    toast.add({ severity: 'warn', summary: 'Bereits gestartet oder Fehler!', detail: 'Der Minecraft Server ist bereits aktiv oder es ist ein Fehler aufgetreten', life: 3000 });
+                    toast.add({ severity: 'warn', summary: 'Bereits gestartet oder Fehler!', detail: 'Der ARK Server ist bereits aktiv oder es ist ein Fehler aufgetreten', life: 3000 });
                 }
             } catch (error: any) {
                 checkError(error)
@@ -185,14 +182,14 @@ const startServer = async () => {
 
 const stopServer = async () => {
     showConfirmationPopup(
-        'Willst du den Minecraft-Server wirklich stoppen?',
+        'Willst du den ARK-Server wirklich stoppen?',
         async () => {
             try {
                 loading.value = true;
-                toast.add({ severity: 'info', summary: 'Wird gestoppt!', detail: 'Der Minecraft Server wird nun gestoppt', life: 3000 });
-                const response = await minecraftStore.stopServer();
+                toast.add({ severity: 'info', summary: 'Wird gestoppt!', detail: 'Der ARK Server wird nun gestoppt', life: 3000 });
+                const response = await arkStore.stopServer();
                 if (!response.success) {
-                    toast.add({ severity: 'warn', summary: 'Bereits gestoppt oder Fehler!', detail: 'Der Minecraft Server ist bereits aus oder es ist ein Fehler aufgetreten', life: 3000 });
+                    toast.add({ severity: 'warn', summary: 'Bereits gestoppt oder Fehler!', detail: 'Der ARK Server ist bereits aus oder es ist ein Fehler aufgetreten', life: 3000 });
                 }
             } catch (error: any) {
                 checkError(error)

@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity()
-export class CommandLog {
+export class ArkCommandLog {
   @PrimaryGeneratedColumn()
   command_id: number;
 
