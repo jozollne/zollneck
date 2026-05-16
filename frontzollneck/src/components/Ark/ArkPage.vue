@@ -85,7 +85,7 @@
         </template>
     </Dialog>
 
-    <Dialog v-model:visible="simpleDialogVisible" modal header="Einfache Server-Einstellungen"
+    <Dialog v-model:visible="simpleDialogVisible" modal header="Server-Einstellungen"
         class="w-11 md:w-10 lg:w-8" :style="{ maxWidth: '900px' }" :closable="!configSaving">
         <div v-if="simpleLoading" class="text-center p-4">
             <i class="pi pi-spin pi-spinner" style="font-size: 2em"></i>
@@ -256,8 +256,8 @@ const allSimpleSettings: SimpleSetting[] = [
     { file: 'gameusersettings', section: GUS_SECTION, key: 'HarvestHealthMultiplier', label: 'Ernte-Gesundheit', category: 'Raten', type: 'slider', min: 0.1, max: 20, step: 0.1 },    
     { file: 'game', section: GAME_SECTION, key: 'PlayerHarvestingDamageMultiplier', label: 'Spieler-Ernte-Schaden', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'DinoHarvestingDamageMultiplier', label: 'Dino-Ernte-Schaden', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'ResourceNoReplenishRadiusPlayers', label: 'Kein-Respawn-Radius (Spieler)', category: 'Raten', type: 'slider', min: 0.1, max: 5, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'ResourceNoReplenishRadiusStructures', label: 'Kein-Respawn-Radius (Bauten)', category: 'Raten', type: 'slider', min: 0.1, max: 5, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'ResourceNoReplenishRadiusPlayers', label: 'Kein-Respawn-Radius (Spieler)', category: 'Raten', type: 'slider', min: 0.1, max: 2, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'ResourceNoReplenishRadiusStructures', label: 'Kein-Respawn-Radius (Bauten)', category: 'Raten', type: 'slider', min: 0.1, max: 2, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'SupplyCrateLootQualityMultiplier', label: 'Loot-Kisten-Qualität', category: 'Raten', type: 'slider', min: 1, max: 5, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'FishingLootQualityMultiplier', label: 'Angel-Loot-Qualität', category: 'Raten', type: 'slider', min: 1, max: 5, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'FuelConsumptionIntervalMultiplier', label: 'Treibstoff-Verbrauch', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
@@ -301,6 +301,7 @@ const allSimpleSettings: SimpleSetting[] = [
     { file: 'game', section: GAME_SECTION, key: 'BabyCuddleGracePeriodMultiplier', label: 'Kuschel-Gnadenzeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'BabyCuddleLoseImprintQualitySpeedMultiplier', label: 'Imprint-Verlust', category: 'Zucht', type: 'slider', min: 0.01, max: 10, step: 0.01 },
     { file: 'game', section: GAME_SECTION, key: 'BabyImprintingStatScaleMultiplier', label: 'Imprint-Bonus', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyImprintAmountMultiplier', label: 'Imprint-Häufigkeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
 
     // Spieler-Stats (Pro Level)
     { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[0]', label: 'Spieler: Gesundheit', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
@@ -329,7 +330,7 @@ const allSimpleSettings: SimpleSetting[] = [
     { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[10]', label: 'Gez. Dino: Resistenz', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
 
     // Verbrauch (Spieler)
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterWaterDrainMultiplier', label: 'Betäubungs-Abnahme', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterWaterDrainMultiplier', label: 'Wasser-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterStaminaDrainMultiplier', label: 'Ausdauer-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterHealthRecoveryMultiplier', label: 'Leben-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
@@ -340,14 +341,16 @@ const allSimpleSettings: SimpleSetting[] = [
     { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterStaminaDrainMultiplier', label: 'Ausdauer-Verbrauchs-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterHealthRecoveryMultiplier', label: 'Leben-Verbrauchs-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
     { file: 'game', section: GAME_SECTION, key: 'LayEggIntervalMultiplier', label: 'Ei-Lege-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'TamedDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
 
     // Verbrauch (Wilde Dinos)
     { file: 'game', section: GAME_SECTION, key: 'WildDinoCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
     { file: 'game', section: GAME_SECTION, key: 'PassiveTameIntervalMultiplier', label: 'Passive Zähmungs-Intervall', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'WildDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme-Wilde-Dinos', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'TamedDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme-Ausgenockte-Dinos', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'WildDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
 
-    // Server-Optionen (Bools) — GameUserSettings.ini
+    // Server-Optionen (Bools)
+    { file: 'game', section: GAME_SECTION, key: 'bAllowUnlimitedRespecs', label: 'Unendliche Resets erlauben', category: 'Server-Optionen', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'bPassiveDefensesDamageRiderlessDinos', label: 'Passive Verteidigung schadet reitlosen Dinos', category: 'Server-Optionen', type: 'bool' },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'ServerPVE', label: 'PvE-Modus', category: 'Server-Optionen', type: 'bool' },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'ServerHardcore', label: 'Hardcore-Modus', category: 'Server-Optionen', type: 'bool' },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventOfflinePvP', label: 'Offline-PvP-Schutz', category: 'Server-Optionen', type: 'bool' },
