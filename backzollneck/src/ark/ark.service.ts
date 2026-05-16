@@ -341,7 +341,6 @@ export class ArkService implements OnModuleInit, OnModuleDestroy {
                 }
             }
         }
-        if (changes.length === 0) return 'Keine Änderungen erkannt.';
         return changes.join('\n');
     }
 

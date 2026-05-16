@@ -232,12 +232,13 @@ const allSimpleSettings: SimpleSetting[] = [
     // Allgemein
     { file: 'gameusersettings', section: GUS_SECTION, key: 'DifficultyOffset', label: 'Schwierigkeit', category: 'Allgemein', type: 'slider', min: 0, max: 1, step: 0.01 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'OverrideOfficialDifficulty', label: 'Max. Wildlevel-Stufe', category: 'Allgemein', type: 'slider', min: 1, max: 10, step: 0.5 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DayCycleSpeedScale', label: 'Tag-Nacht-Zyklus-Geschwindigkeit', category: 'Allgemein', type: 'slider', min: 0.1, max: 10, step: 0.1 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'NightTimeSpeedScale', label: 'Nacht-Geschwindigkeit', category: 'Allgemein', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCountMultiplier', label: 'Dino-Anzahl', category: 'Allgemein', type: 'slider', min: 0.1, max: 5, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DayTimeSpeedScale', label: 'Tag-Geschwindigkeit', category: 'Allgemein', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCountMultiplier', label: 'Wie viele Wilde Dinos spawnen', category: 'Allgemein', type: 'slider', min: 0.1, max: 5, step: 0.1 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'MaxTamedDinos', label: 'Max. gez. Dinos', category: 'Allgemein', type: 'slider', min: 100, max: 10000, step: 100 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'ResourcesRespawnPeriodMultiplier', label: 'Ressourcen-Respawn-Zeit', category: 'Allgemein', type: 'slider', min: 0.1, max: 5, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'StructurePreventResourceRadiusMultiplier', label: 'Ressourcen-Blockradius', category: 'Allgemein', type: 'slider', min: 0.1, max: 5, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'KickIdlePlayersPeriod', label: 'AFK-Kick (Sekunden)', category: 'Allgemein', type: 'slider', min: 60, max: 7200, step: 60 },
+    { file: 'game', section: GAME_SECTION, key: 'KickIdlePlayersPeriod', label: 'AFK-Kick (Sekunden)', category: 'Allgemein', type: 'slider', min: 60, max: 7200, step: 60 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'AutoSavePeriodMinutes', label: 'Auto-Save-Intervall (Min)', category: 'Allgemein', type: 'slider', min: 1, max: 60, step: 1 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'TribeNameChangeCooldown', label: 'Tribe-Umbenennen Cooldown (Min)', category: 'Allgemein', type: 'slider', min: 0, max: 60, step: 1 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'TheMaxStructuresInRange', label: 'Max. Strukturen in Reichweite', category: 'Allgemein', type: 'slider', min: 1000, max: 25000, step: 500 },
@@ -246,30 +247,35 @@ const allSimpleSettings: SimpleSetting[] = [
     { file: 'gameusersettings', section: GUS_SECTION, key: 'StructurePickupTimeAfterPlacement', label: 'Pickup-Zeitfenster (Sek.)', category: 'Allgemein', type: 'slider', min: 0, max: 600, step: 5 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'StructurePickupHoldDuration', label: 'Pickup-Halte-Dauer (Sek.)', category: 'Allgemein', type: 'slider', min: 0, max: 5, step: 0.1 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'ItemStackSizeMultiplier', label: 'Item-Stack-Größe', category: 'Allgemein', type: 'slider', min: 0.1, max: 100, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'OxygenSwimSpeedStatMultiplier', label: 'Oxygen-Schwimmtempo-Mult.', category: 'Allgemein', type: 'slider', min: 1, max: 50, step: 1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'GreaterRiftActivationMultiplier', label: 'Greater Rift Aktivierung', category: 'Allgemein', type: 'slider', min: 0.1, max: 10, step: 0.1 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventOfflinePvPInterval', label: 'Offline-PvP-Schutz Intervall (Sek.)', category: 'Allgemein', type: 'slider', min: 0, max: 3600, step: 1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'StructureDamageRepairCooldown', label: 'Reparatur-Cooldown', category: 'Allgemein', type: 'slider', min: 0, max: 600, step: 1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'RCONServerGameLogBuffer', label: 'RCON Game-Log-Buffer', category: 'Allgemein', type: 'slider', min: 0, max: 5000, step: 50 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEStructureDecayPeriodMultiplier', label: 'PvE Bauwerk-Verfall (Periode)', category: 'Allgemein', type: 'slider', min: 0.1, max: 20, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEDinoDecayPeriodMultiplier', label: 'PvE Dino-Verfall (Periode)', category: 'Allgemein', type: 'slider', min: 0.1, max: 20, step: 0.1 },
-
+    { file: 'game', section: GAME_SECTION, key: 'StructureDamageRepairCooldown', label: 'Reparatur-Cooldown', category: 'Allgemein', type: 'slider', min: 0, max: 600, step: 1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'MaxPlatformSaddleStructureLimit', label: 'Absolutes Plattform-Sattel Limit', category: 'Allgemein', type: 'slider', min: 10, max: 500, step: 5 },
+    
     // Raten (XP, Taming, Ernte)
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'TamingSpeedMultiplier', label: 'Taming-Geschwindigkeit', category: 'Raten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'HarvestAmountMultiplier', label: 'Ernte-Menge', category: 'Raten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'CropGrowthSpeedMultiplier', label: 'Pflanzenwachstum', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'CropDecaySpeedMultiplier', label: 'Pflanzenverfall', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'DinoHarvestingDamageMultiplier', label: 'Dino-Ernte-Schaden', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'HarvestHealthMultiplier', label: 'Ernte-Gesundheit', category: 'Raten', type: 'slider', min: 0.1, max: 20, step: 0.1 },    
     { file: 'game', section: GAME_SECTION, key: 'PlayerHarvestingDamageMultiplier', label: 'Spieler-Ernte-Schaden', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'DinoHarvestingDamageMultiplier', label: 'Dino-Ernte-Schaden', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'ResourceNoReplenishRadiusPlayers', label: 'Kein-Respawn-Radius (Spieler)', category: 'Raten', type: 'slider', min: 0.1, max: 5, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'ResourceNoReplenishRadiusStructures', label: 'Kein-Respawn-Radius (Bauten)', category: 'Raten', type: 'slider', min: 0.1, max: 5, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'SupplyCrateLootQualityMultiplier', label: 'Loot-Kisten-Qualität', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'FishingLootQualityMultiplier', label: 'Angel-Loot-Qualität', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'GlobalCorpseDecompositionTimeMultiplier', label: 'Leichen-Zerfall-Zeit', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'SupplyCrateLootQualityMultiplier', label: 'Loot-Kisten-Qualität', category: 'Raten', type: 'slider', min: 1, max: 5, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'FishingLootQualityMultiplier', label: 'Angel-Loot-Qualität', category: 'Raten', type: 'slider', min: 1, max: 5, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'FuelConsumptionIntervalMultiplier', label: 'Treibstoff-Verbrauch', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'PvPZoneStructureDamageMultiplier', label: 'PvP-Zone Bauwerk-Schaden', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'CropGrowthSpeedMultiplier', label: 'Pflanzenwachstum', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'HairGrowthSpeedMultiplier', label: 'Haarwachstums-Geschwindigkeit', category: 'Raten', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'PoopIntervalMultiplier', label: 'Kot-Intervall', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
 
-    // XP detailliert (Game.ini)
+    // Verfallszeiten
+    { file: 'game', section: GAME_SECTION, key: 'GlobalCorpseDecompositionTimeMultiplier', label: 'Leichen-Zerfall-Zeit', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEStructureDecayPeriodMultiplier', label: 'PvE Bauwerk-Verfall (Übernahme)', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEStructureDecayDestructionPeriod', label: 'PvE Bauwerk-Verfall (Zerstörung)', category: 'Verfallszeiten', type: 'slider', min: 0.0, max: 20, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEDinoDecayPeriodMultiplier', label: 'PvE Dino-Verfall (Übernahme)', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'CropDecaySpeedMultiplier', label: 'Pflanzenverfall', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DisableStructureDecayPVE', label: 'Bauwerksverfall deaktivieren (PvE)', category: 'Verfallszeiten', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DisableDinoDecayPvE', label: 'Dino-Verfall deaktivieren (PvE)', category: 'Verfallszeiten', type: 'bool' },
+
+    // XP Multiplikatoren
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'XPMultiplier', label: 'XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'KillXPMultiplier', label: 'Kill-XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'HarvestXPMultiplier', label: 'Ernte-XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'CraftXPMultiplier', label: 'Crafting-XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
@@ -277,24 +283,69 @@ const allSimpleSettings: SimpleSetting[] = [
     { file: 'game', section: GAME_SECTION, key: 'SpecialXPMultiplier', label: 'Spezial-XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
 
     // Schaden & Resistenz
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'TamedDinoDamageMultiplier', label: 'Gez. Dinos: Schaden', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 20, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'TamedDinoResistanceMultiplier', label: 'Gez. Dinos: Resistenz', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 20, step: 0.1 },
-
-    // Verbrauch (Dinos)
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'RaidDinoCharacterFoodDrainMultiplier', label: 'Raid-Dinos: Hunger', category: 'Verbrauch (Dinos)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PoopIntervalMultiplier', label: 'Dino-Kot-Intervall', category: 'Verbrauch (Dinos)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'LayEggIntervalMultiplier', label: 'Ei-Lege-Intervall', category: 'Verbrauch (Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerDamageMultiplier', label: 'Spieler Schaden', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerResistanceMultiplier', label: 'Spieler Resistenz', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoDamageMultiplier', label: 'Dinos Schaden', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoResistanceMultiplier', label: 'Dinos Resistenz', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'StructureDamageMultiplier', label: 'Bauwerke Schaden', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PvPZoneStructureDamageMultiplier', label: 'PvP-Zone Bauwerk-Schaden', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.01 },
 
     // Zucht
-    { file: 'game', section: GAME_SECTION, key: 'MatingIntervalMultiplier', label: 'Paarungs-Intervall', category: 'Zucht', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'TamingSpeedMultiplier', label: 'Taming-Geschwindigkeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'MatingIntervalMultiplier', label: 'Paarungs-Intervall', category: 'Zucht', type: 'slider', min: 0.01, max: 10, step: 0.01 },
     { file: 'game', section: GAME_SECTION, key: 'MatingSpeedMultiplier', label: 'Paarungs-Geschwindigkeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'EggHatchSpeedMultiplier', label: 'Ei-Brutzeit', category: 'Zucht', type: 'slider', min: 0.1, max: 50, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'BabyMatureSpeedMultiplier', label: 'Baby-Reifung', category: 'Zucht', type: 'slider', min: 0.1, max: 50, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'EggHatchSpeedMultiplier', label: 'Ei-Brutzeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyMatureSpeedMultiplier', label: 'Baby-Reifung', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
     { file: 'game', section: GAME_SECTION, key: 'BabyFoodConsumptionSpeedMultiplier', label: 'Baby-Hunger', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'BabyCuddleIntervalMultiplier', label: 'Baby-Kuschel-Intervall', category: 'Zucht', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyCuddleIntervalMultiplier', label: 'Baby-Kuschel-Intervall', category: 'Zucht', type: 'slider', min: 0.01, max: 10, step: 0.01 },
     { file: 'game', section: GAME_SECTION, key: 'BabyCuddleGracePeriodMultiplier', label: 'Kuschel-Gnadenzeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'BabyCuddleLoseImprintQualitySpeedMultiplier', label: 'Imprint-Verlust', category: 'Zucht', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyCuddleLoseImprintQualitySpeedMultiplier', label: 'Imprint-Verlust', category: 'Zucht', type: 'slider', min: 0.01, max: 10, step: 0.01 },
     { file: 'game', section: GAME_SECTION, key: 'BabyImprintingStatScaleMultiplier', label: 'Imprint-Bonus', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+
+    // Spieler-Stats (Pro Level)
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[0]', label: 'Spieler: Gesundheit', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[1]', label: 'Spieler: Ausdauer', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[2]', label: 'Spieler: Betäubung', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[3]', label: 'Spieler: Sauerstoff', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[4]', label: 'Spieler: Nahrung', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[5]', label: 'Spieler: Wasser', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[6]', label: 'Spieler: Temperatur', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[7]', label: 'Spieler: Gewicht', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[8]', label: 'Spieler: Nahkampfschaden', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[9]', label: 'Spieler: Geschwindigkeit', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[10]', label: 'Spieler: Resistenz', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+
+    // Dino-Stats (Pro Level)
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[0]', label: 'Gez. Dino: Gesundheit', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[1]', label: 'Gez. Dino: Ausdauer', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[2]', label: 'Gez. Dino: Betäubung', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[3]', label: 'Gez. Dino: Sauerstoff', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[4]', label: 'Gez. Dino: Nahrung', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[5]', label: 'Gez. Dino: Wasser', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[6]', label: 'Gez. Dino: Temperatur', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[7]', label: 'Gez. Dino: Gewicht', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[8]', label: 'Gez. Dino: Nahkampfschaden', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[9]', label: 'Gez. Dino: Geschwindigkeit', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[10]', label: 'Gez. Dino: Resistenz', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+
+    // Verbrauch (Spieler)
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterWaterDrainMultiplier', label: 'Betäubungs-Abnahme', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterStaminaDrainMultiplier', label: 'Ausdauer-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterHealthRecoveryMultiplier', label: 'Leben-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+
+    // Verbrauch (Gezähmte Dinos)
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'TamedDinoCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall 2', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterStaminaDrainMultiplier', label: 'Ausdauer-Verbrauchs-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterHealthRecoveryMultiplier', label: 'Leben-Verbrauchs-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'LayEggIntervalMultiplier', label: 'Ei-Lege-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+
+    // Verbrauch (Wilde Dinos)
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'WildDinoCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PassiveTameIntervalMultiplier', label: 'Passive Zähmungs-Intervall', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'WildDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme-Wilde-Dinos', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'TamedDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme-Ausgenockte-Dinos', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
 
     // Server-Optionen (Bools) — GameUserSettings.ini
     { file: 'gameusersettings', section: GUS_SECTION, key: 'ServerPVE', label: 'PvE-Modus', category: 'Server-Optionen', type: 'bool' },
@@ -329,27 +380,29 @@ const allSimpleSettings: SimpleSetting[] = [
     { file: 'gameusersettings', section: GUS_SECTION, key: 'EnableExtraStructurePreventionVolumes', label: 'Extra Bau-Sperrzonen', category: 'Server-Optionen', type: 'bool' },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowIntegratedSPlusStructures', label: 'S+ Strukturen erlauben', category: 'Server-Optionen', type: 'bool' },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowHideDamageSourceFromLogs', label: 'Schadensquelle aus Logs verbergen', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'ShowAnniversaryContent', label: 'Jubiläums-Content', category: 'Server-Optionen', type: 'bool' },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'AlwaysNotifyPlayerLeft', label: 'Spieler-Verlassen melden', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DontAlwaysNotifyPlayerJoined', label: 'Spieler-Beitritt nicht melden', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'OnlyAllowSpecifiedEngrams', label: 'Nur erlaubte Engrams', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'bAllowFlyerSpeedLeveling', label: 'Flyer Speed leveln', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AlwaysNotifyPlayerJoined', label: 'Spieler-Beitritt melden', category: 'Server-Optionen', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'bOnlyAllowSpecifiedEngrams', label: 'Nur erlaubte Engrams', category: 'Server-Optionen', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'bAllowFlyerSpeedLeveling', label: 'Flyer Speed leveln', category: 'Server-Optionen', type: 'bool' },
     { file: 'gameusersettings', section: GUS_SECTION, key: 'bUseSingleplayerSettings', label: 'Singleplayer-Einstellungen', category: 'Server-Optionen', type: 'bool' },
-
-    // Server-Optionen (Bools) — Game.ini
     { file: 'game', section: GAME_SECTION, key: 'bDisableFriendlyFire', label: 'Friendly Fire deaktivieren', category: 'Server-Optionen', type: 'bool' },
     { file: 'game', section: GAME_SECTION, key: 'bUseCorpseLocator', label: 'Leichen-Anzeige', category: 'Server-Optionen', type: 'bool' },
     { file: 'game', section: GAME_SECTION, key: 'bDisableStructurePlacementCollision', label: 'Bau-Kollision deaktivieren', category: 'Server-Optionen', type: 'bool' },
-    { file: 'game', section: GAME_SECTION, key: 'bAllowPlatformSaddleMultiFloors', label: 'Plattform-Sattel: mehrere Etagen', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'bAllowPlatformSaddleMultiFloors', label: 'Plattform-Sattel: mehrere Etagen', category: 'Server-Optionen', type: 'bool' },
 ];
 
 const SIMPLE_CATEGORIES = [
     'Allgemein',
     'Raten',
+    'Verfallszeiten',
     'XP-Boni',
     'Schaden & Resistenz',
-    'Verbrauch (Dinos)',
     'Zucht',
+    'Spieler-Stats (Pro Level)',
+    'Dino-Stats (Pro Level)',
+    'Verbrauch (Spieler)',
+    'Verbrauch (Gezähmte Dinos)',
+    'Verbrauch (Wilde Dinos)',
     'Server-Optionen',
 ];
 
@@ -360,13 +413,15 @@ const groupedSchema = SIMPLE_CATEGORIES
 const categoryIcon = (cat: string): string => {
     switch (cat) {
         case 'Allgemein': return 'pi pi-cog';
+        case 'Server-Optionen': return 'pi pi-sliders-v';
         case 'Raten': return 'pi pi-percentage';
+        case 'Verfallszeiten': return 'pi pi-clock';
         case 'XP-Boni': return 'pi pi-star';
         case 'Schaden & Resistenz': return 'pi pi-shield';
         case 'Verbrauch (Spieler)': return 'pi pi-user';
-        case 'Verbrauch (Dinos)': return 'pi pi-heart';
+        case 'Verbrauch (Gezähmte Dinos)': return 'pi pi-heart';
+        case 'Verbrauch (Wilde Dinos)': return 'pi pi-dinosaur';
         case 'Zucht': return 'pi pi-heart-fill';
-        case 'Server-Optionen': return 'pi pi-sliders-v';
         default: return 'pi pi-circle';
     }
 };
