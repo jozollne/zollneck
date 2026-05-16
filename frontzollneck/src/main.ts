@@ -41,6 +41,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Rating from 'primevue/rating';
 import Slider from 'primevue/slider';
+import Tooltip from 'primevue/tooltip';
 
 
 const app = createApp(Overlay)
@@ -82,6 +83,7 @@ app.component('DataTable', DataTable);
 app.component('Column', Column);
 app.component('Rating', Rating);
 app.component('Slider', Slider);
+app.directive('tooltip', Tooltip);
 
 const savedToken = localStorage.getItem('userToken');
 if (savedToken) {

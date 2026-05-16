@@ -101,7 +101,11 @@
                 <div class="flex flex-column gap-3">
                     <div v-for="s in g.items" :key="s.key" class="simple-row">
                         <div class="flex justify-content-between align-items-center mb-1">
-                            <label class="font-medium">{{ s.label }}</label>
+                            <div class="flex align-items-center gap-1">
+                                <label class="font-medium">{{ s.label }}</label>
+                                <i v-if="s.tooltip" class="pi pi-info-circle simple-tooltip-icon"
+                                    v-tooltip.top="{ value: s.tooltip, showDelay: 200 }"></i>
+                            </div>
                             <InputSwitch v-if="s.type === 'bool'" v-model="simpleValues[s.key]"
                                 :disabled="configSaving" />
                         </div>
@@ -217,6 +221,7 @@ type SimpleSetting = {
     file: 'game' | 'gameusersettings';
     section: string;
     label: string;
+    tooltip?: string;
     category: string;
     type: 'slider' | 'bool';
     min?: number;
@@ -230,168 +235,166 @@ const GAME_SECTION = '/Script/ShooterGame.ShooterGameMode';
 // Schema basiert auf den tatsächlich in den aktuellen INIs vorhandenen Keys.
 const allSimpleSettings: SimpleSetting[] = [
     // Allgemein
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DifficultyOffset', label: 'Schwierigkeit', category: 'Allgemein', type: 'slider', min: 0, max: 1, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'OverrideOfficialDifficulty', label: 'Max. Wildlevel-Stufe', category: 'Allgemein', type: 'slider', min: 1, max: 10, step: 0.5 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DayCycleSpeedScale', label: 'Tag-Nacht-Zyklus-Geschwindigkeit', category: 'Allgemein', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'NightTimeSpeedScale', label: 'Nacht-Geschwindigkeit', category: 'Allgemein', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DayTimeSpeedScale', label: 'Tag-Geschwindigkeit', category: 'Allgemein', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCountMultiplier', label: 'Wie viele Wilde Dinos spawnen', category: 'Allgemein', type: 'slider', min: 0.1, max: 5, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'MaxTamedDinos', label: 'Max. gez. Dinos', category: 'Allgemein', type: 'slider', min: 100, max: 10000, step: 100 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'ResourcesRespawnPeriodMultiplier', label: 'Ressourcen-Respawn-Zeit', category: 'Allgemein', type: 'slider', min: 0.1, max: 5, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'KickIdlePlayersPeriod', label: 'AFK-Kick (Sekunden)', category: 'Allgemein', type: 'slider', min: 60, max: 7200, step: 60 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AutoSavePeriodMinutes', label: 'Auto-Save-Intervall (Min)', category: 'Allgemein', type: 'slider', min: 1, max: 60, step: 1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'TribeNameChangeCooldown', label: 'Tribe-Umbenennen Cooldown (Min)', category: 'Allgemein', type: 'slider', min: 0, max: 60, step: 1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'TheMaxStructuresInRange', label: 'Max. Strukturen in Reichweite', category: 'Allgemein', type: 'slider', min: 1000, max: 25000, step: 500 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PerPlatformMaxStructuresMultiplier', label: 'Plattform-Strukturen Mult.', category: 'Allgemein', type: 'slider', min: 0.5, max: 20, step: 0.5 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlatformSaddleBuildAreaBoundsMultiplier', label: 'Plattform-Bau-Radius', category: 'Allgemein', type: 'slider', min: 0.5, max: 10, step: 0.5 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'StructurePickupTimeAfterPlacement', label: 'Pickup-Zeitfenster (Sek.)', category: 'Allgemein', type: 'slider', min: 0, max: 600, step: 5 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'StructurePickupHoldDuration', label: 'Pickup-Halte-Dauer (Sek.)', category: 'Allgemein', type: 'slider', min: 0, max: 5, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'ItemStackSizeMultiplier', label: 'Item-Stack-Größe', category: 'Allgemein', type: 'slider', min: 0.1, max: 100, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventOfflinePvPInterval', label: 'Offline-PvP-Schutz Intervall (Sek.)', category: 'Allgemein', type: 'slider', min: 0, max: 3600, step: 1 },
-    { file: 'game', section: GAME_SECTION, key: 'StructureDamageRepairCooldown', label: 'Reparatur-Cooldown', category: 'Allgemein', type: 'slider', min: 0, max: 600, step: 1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'MaxPlatformSaddleStructureLimit', label: 'Absolutes Plattform-Sattel Limit', category: 'Allgemein', type: 'slider', min: 10, max: 500, step: 5 },
-    
-    // Raten (XP, Taming, Ernte)
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'HarvestAmountMultiplier', label: 'Ernte-Menge', category: 'Raten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'HarvestHealthMultiplier', label: 'Ernte-Gesundheit', category: 'Raten', type: 'slider', min: 0.1, max: 20, step: 0.1 },    
-    { file: 'game', section: GAME_SECTION, key: 'PlayerHarvestingDamageMultiplier', label: 'Spieler-Ernte-Schaden', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'DinoHarvestingDamageMultiplier', label: 'Dino-Ernte-Schaden', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'ResourceNoReplenishRadiusPlayers', label: 'Kein-Respawn-Radius (Spieler)', category: 'Raten', type: 'slider', min: 0.1, max: 2, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'ResourceNoReplenishRadiusStructures', label: 'Kein-Respawn-Radius (Bauten)', category: 'Raten', type: 'slider', min: 0.1, max: 2, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'SupplyCrateLootQualityMultiplier', label: 'Loot-Kisten-Qualität', category: 'Raten', type: 'slider', min: 1, max: 5, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'FishingLootQualityMultiplier', label: 'Angel-Loot-Qualität', category: 'Raten', type: 'slider', min: 1, max: 5, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'FuelConsumptionIntervalMultiplier', label: 'Treibstoff-Verbrauch', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'CropGrowthSpeedMultiplier', label: 'Pflanzenwachstum', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'HairGrowthSpeedMultiplier', label: 'Haarwachstums-Geschwindigkeit', category: 'Raten', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'PoopIntervalMultiplier', label: 'Kot-Intervall', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DifficultyOffset', label: 'Schwierigkeit (Offset)', tooltip: 'Basis-Schwierigkeitswert (0–1). Wird von "Max. Wildlevel" überschrieben wenn gesetzt. Höher = schwerere Gegner.', category: 'Allgemein', type: 'slider', min: 0, max: 1, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'OverrideOfficialDifficulty', label: 'Max. Wildlevel', tooltip: 'Maximales Level wilder Dinos. Wert × 30 = max. Level (z.B. 5.0 → Level 150, 10.0 → Level 300).', category: 'Allgemein', type: 'slider', min: 1, max: 10, step: 0.5 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'DayCycleSpeedScale', label: 'Zyklusgeschwindigkeit (Tag/Nacht)', tooltip: 'Gesamtgeschwindigkeit des Tag-Nacht-Zyklus. Höher = schnellerer Wechsel zwischen Tag und Nacht.', category: 'Allgemein', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'NightTimeSpeedScale', label: 'Nachtgeschwindigkeit', tooltip: 'Wie schnell die Nacht vergeht. Höher = kürzere Nächte.', category: 'Allgemein', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'DayTimeSpeedScale', label: 'Taggeschwindigkeit', tooltip: 'Wie schnell der Tag vergeht. Höher = kürzere Tage.', category: 'Allgemein', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCountMultiplier', label: 'Wilde Dino-Anzahl', tooltip: 'Multiplikator für die Anzahl wild spawnender Dinos. 1.0 = Standard, 2.0 = doppelt so viele.', category: 'Allgemein', type: 'slider', min: 0.1, max: 5, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'MaxTamedDinos', label: 'Max. gezähmte Dinos (Server)', tooltip: 'Maximale Gesamtanzahl gezähmter Dinos auf dem gesamten Server. Gilt für alle Spieler zusammen.', category: 'Allgemein', type: 'slider', min: 100, max: 10000, step: 100 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'ResourcesRespawnPeriodMultiplier', label: 'Ressourcen-Respawnzeit', tooltip: 'Multiplikator für die Zeit bis Ressourcen (Stein, Holz, Erz...) wieder erscheinen. Kleiner = schnellerer Respawn.', category: 'Allgemein', type: 'slider', min: 0.1, max: 5, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'KickIdlePlayersPeriod', label: 'AFK-Kick nach (Sekunden)', tooltip: 'Spieler werden nach dieser Inaktivitätszeit automatisch vom Server getrennt.', category: 'Allgemein', type: 'slider', min: 60, max: 7200, step: 60 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AutoSavePeriodMinutes', label: 'Auto-Save Intervall (Min.)', tooltip: 'Wie oft der Server automatisch speichert. Kleinere Werte = sicherere Daten, aber mehr Server-Last.', category: 'Allgemein', type: 'slider', min: 1, max: 60, step: 1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'TribeNameChangeCooldown', label: 'Tribe-Umbenennungs-Cooldown (Min.)', tooltip: 'Wartezeit in Minuten bevor ein Tribe seinen Namen erneut ändern kann.', category: 'Allgemein', type: 'slider', min: 0, max: 60, step: 1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'TheMaxStructuresInRange', label: 'Max. Strukturen in Reichweite', tooltip: 'Maximale Anzahl Bauwerke eines Tribes im Wirkungsbereich (Standard: 10500). Verhindert übermäßigen Ausbau.', category: 'Allgemein', type: 'slider', min: 1000, max: 25000, step: 500 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PerPlatformMaxStructuresMultiplier', label: 'Plattformsattel-Strukturen (Mult.)', tooltip: 'Multipliziert das Bauwerk-Limit auf Plattformsätteln (z.B. Bronto, Quetz). Höher = mehr Bauplätze.', category: 'Allgemein', type: 'slider', min: 0.5, max: 20, step: 0.5 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlatformSaddleBuildAreaBoundsMultiplier', label: 'Plattformsattel-Baubereich', tooltip: 'Vergrößert/verkleinert den Baubereich auf Plattformsätteln. Höher = größerer Baubereich.', category: 'Allgemein', type: 'slider', min: 0.5, max: 10, step: 0.5 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'StructurePickupTimeAfterPlacement', label: 'Pickup-Zeitfenster nach Bau (Sek.)', tooltip: 'Wie lange nach dem Platzieren eine Struktur ohne Werkzeug wieder aufgehoben werden kann (0 = deaktiviert).', category: 'Allgemein', type: 'slider', min: 0, max: 600, step: 5 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'StructurePickupHoldDuration', label: 'Pickup-Halte-Dauer (Sek.)', tooltip: 'Wie lange E gehalten werden muss um eine Struktur aufzunehmen. Kleiner = schnelleres Aufheben.', category: 'Allgemein', type: 'slider', min: 0, max: 5, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'ItemStackSizeMultiplier', label: 'Item-Stapelgröße', tooltip: 'Multiplikator für die maximale Stapelgröße von Items. Höher = mehr Items pro Slot möglich.', category: 'Allgemein', type: 'slider', min: 0.1, max: 100, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventOfflinePvPInterval', label: 'Offline-PvP-Schutz Verzögerung (Sek.)', tooltip: 'Sekunden nach dem Ausloggen bis der Offline-PvP-Schutz greift. 0 = sofortiger Schutz.', category: 'Allgemein', type: 'slider', min: 0, max: 3600, step: 1 },
+    { file: 'game', section: GAME_SECTION, key: 'StructureDamageRepairCooldown', label: 'Reparatur-Cooldown nach Schaden (Sek.)', tooltip: 'Wie viele Sekunden nach einem Angriff eine Struktur nicht repariert werden kann.', category: 'Allgemein', type: 'slider', min: 0, max: 600, step: 1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'MaxPlatformSaddleStructureLimit', label: 'Plattformsattel Max-Strukturen (absolut)', tooltip: 'Absolutes Strukturlimit pro Plattformsattel, unabhängig vom Multiplikator.', category: 'Allgemein', type: 'slider', min: 10, max: 500, step: 5 },
+
+    // Raten
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'HarvestAmountMultiplier', label: 'Ernte-Menge', tooltip: 'Wie viel Ressourcen pro Ernteschlag gewonnen werden. 2.0 = doppelte Ausbeute.', category: 'Raten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'HarvestHealthMultiplier', label: 'Ressourcen-Lebenspunkte', tooltip: 'Lebenspunkte der Ressourcen (Bäume, Steine...). Höher = mehr Schläge zum Abbauen nötig, aber auch mehr Ausbeute.', category: 'Raten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PlayerHarvestingDamageMultiplier', label: 'Spieler-Ernteschaden', tooltip: 'Schaden den Spieler beim Ernten an Ressourcen verursachen. Höher = schnelleres Abbauen.', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'DinoHarvestingDamageMultiplier', label: 'Dino-Ernteschaden', tooltip: 'Schaden den gezähmte Dinos beim Ernten an Ressourcen verursachen.', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'ResourceNoReplenishRadiusPlayers', label: 'Ressourcen-Sperrradius (Spieler)', tooltip: 'Multiplikator des Radius um Spieler, in dem keine Ressourcen respawnen. Größer = weiterer Sperrbereich.', category: 'Raten', type: 'slider', min: 0.1, max: 2, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'ResourceNoReplenishRadiusStructures', label: 'Ressourcen-Sperrradius (Bauwerke)', tooltip: 'Multiplikator des Radius um Bauwerke, in dem keine Ressourcen respawnen.', category: 'Raten', type: 'slider', min: 0.1, max: 2, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'SupplyCrateLootQualityMultiplier', label: 'Versorgungskisten-Qualität', tooltip: 'Qualitätsmultiplikator für Items in Versorgungskisten (Drops). Höher = bessere Ausrüstung.', category: 'Raten', type: 'slider', min: 1, max: 5, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'FishingLootQualityMultiplier', label: 'Angel-Loot-Qualität', tooltip: 'Qualitätsmultiplikator für Items beim Angeln. Höher = bessere gefangene Ausrüstung.', category: 'Raten', type: 'slider', min: 1, max: 5, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'FuelConsumptionIntervalMultiplier', label: 'Treibstoffverbrauch (Mult.)', tooltip: 'Multiplikator für den Treibstoffverbrauch von Generatoren, Öfen, Fackeln usw. Kleiner = sparsamer.', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'CropGrowthSpeedMultiplier', label: 'Pflanzenwachstumsgeschwindigkeit', tooltip: 'Wie schnell Pflanzen in Pflanzentöpfen wachsen und Früchte tragen. Höher = schneller.', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'HairGrowthSpeedMultiplier', label: 'Haarwachstumsgeschwindigkeit', tooltip: 'Wie schnell Haare und Bart nachwachsen. Höher = schneller. Beeinflusst auch Wollproduktion.', category: 'Raten', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'PoopIntervalMultiplier', label: 'Dino-Kotintervall', tooltip: 'Zeitabstand zwischen Dino-Ausscheidungen. Kleiner = häufiger Kot (nützlich für Dünger-Farmen).', category: 'Raten', type: 'slider', min: 0.1, max: 10, step: 0.1 },
 
     // Verfallszeiten
-    { file: 'game', section: GAME_SECTION, key: 'GlobalCorpseDecompositionTimeMultiplier', label: 'Leichen-Zerfall-Zeit', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEStructureDecayPeriodMultiplier', label: 'PvE Bauwerk-Verfall (Übernahme)', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEStructureDecayDestructionPeriod', label: 'PvE Bauwerk-Verfall (Zerstörung)', category: 'Verfallszeiten', type: 'slider', min: 0.0, max: 20, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEDinoDecayPeriodMultiplier', label: 'PvE Dino-Verfall (Übernahme)', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'CropDecaySpeedMultiplier', label: 'Pflanzenverfall', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DisableStructureDecayPVE', label: 'Bauwerksverfall deaktivieren (PvE)', category: 'Verfallszeiten', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DisableDinoDecayPvE', label: 'Dino-Verfall deaktivieren (PvE)', category: 'Verfallszeiten', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'GlobalCorpseDecompositionTimeMultiplier', label: 'Verwesungszeit (Leichen)', tooltip: 'Wie lange Leichen von Spielern und Dinos bestehen bleiben. Höher = länger sichtbar/bergbar.', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEStructureDecayPeriodMultiplier', label: 'PvE Bauwerk-Verfall bis Übernahme', tooltip: 'Multiplikator für die Zeit bis ein Bauwerk im PvE-Modus von anderen übernommen werden kann (bei Eigentümer-Inaktivität).', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEStructureDecayDestructionPeriod', label: 'PvE Bauwerk-Verfall bis Zerstörung (Std.)', tooltip: 'Stunden nach der Übernahmereife bis ein Bauwerk automatisch zerstört wird (0 = nicht zerstören).', category: 'Verfallszeiten', type: 'slider', min: 0.0, max: 20, step: 0.1 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvEDinoDecayPeriodMultiplier', label: 'PvE Dino-Verfall bis Übernahme', tooltip: 'Multiplikator für die Zeit bis ein gezähmter Dino im PvE-Modus von anderen beansprucht werden kann.', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 20, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'CropDecaySpeedMultiplier', label: 'Pflanzenverfall-Geschwindigkeit', tooltip: 'Wie schnell ungegossene Pflanzen in Töpfen verwelken/verfaulen. Kleiner = langlebiger.', category: 'Verfallszeiten', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DisableStructureDecayPVE', label: 'Bauwerksverfall deaktivieren (PvE)', tooltip: 'Schaltet den automatischen Verfall und Übernahme-Timer von Bauwerken im PvE-Modus komplett aus.', category: 'Verfallszeiten', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DisableDinoDecayPvE', label: 'Dino-Verfall deaktivieren (PvE)', tooltip: 'Schaltet den automatischen Verfall-Timer gezähmter Dinos im PvE-Modus komplett aus.', category: 'Verfallszeiten', type: 'bool' },
 
     // XP Multiplikatoren
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'XPMultiplier', label: 'XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'KillXPMultiplier', label: 'Kill-XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'HarvestXPMultiplier', label: 'Ernte-XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'CraftXPMultiplier', label: 'Crafting-XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'GenericXPMultiplier', label: 'Generisches XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'SpecialXPMultiplier', label: 'Spezial-XP', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'XPMultiplier', label: 'Globaler XP-Multiplikator', tooltip: 'Allgemeiner Multiplikator für alle XP-Quellen gleichzeitig. Wird mit den spezifischen XP-Multiplikatoren multipliziert.', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'KillXPMultiplier', label: 'Kill-XP', tooltip: 'XP-Multiplikator speziell fürs Töten von Kreaturen.', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'HarvestXPMultiplier', label: 'Ernte-XP', tooltip: 'XP-Multiplikator für das Sammeln von Ressourcen.', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'CraftXPMultiplier', label: 'Crafting-XP', tooltip: 'XP-Multiplikator für das Herstellen von Items und Bauwerken.', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'GenericXPMultiplier', label: 'Allgemeines XP', tooltip: 'XP-Multiplikator für allgemeine Aktionen (z.B. Erkunden neuer Gebiete).', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'SpecialXPMultiplier', label: 'Spezial-XP', tooltip: 'XP-Multiplikator für besondere Aktionen (z.B. Bezwingen von Bossen).', category: 'XP-Boni', type: 'slider', min: 0.1, max: 10, step: 0.1 },
 
     // Schaden & Resistenz
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerDamageMultiplier', label: 'Spieler Schaden', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerResistanceMultiplier', label: 'Spieler Resistenz', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoDamageMultiplier', label: 'Dinos Schaden', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoResistanceMultiplier', label: 'Dinos Resistenz', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'StructureDamageMultiplier', label: 'Bauwerke Schaden', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PvPZoneStructureDamageMultiplier', label: 'PvP-Zone Bauwerk-Schaden', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerDamageMultiplier', label: 'Spieler-Schaden', tooltip: 'Multiplikator für den Schaden, den Spieler verursachen. Höher = mehr Schaden.', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerResistanceMultiplier', label: 'Spieler-Resistenz', tooltip: 'Multiplikator für den Schaden, den Spieler erleiden. Kleiner = weniger Schaden eingesteckt (zäherer Spieler).', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'DinoDamageMultiplier', label: 'Wilder Dino-Schaden', tooltip: 'Multiplikator für den Schaden wilder Dinos. Höher = gefährlichere Wildtiere.', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'DinoResistanceMultiplier', label: 'Wilder Dino-Resistenz', tooltip: 'Multiplikator für den Schaden, den wilde Dinos erleiden. Kleiner = zähere Wildtiere.', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'StructureDamageMultiplier', label: 'Bauwerk-Schaden', tooltip: 'Multiplikator für den Schaden, den Bauwerke erleiden. Kleiner = stabilere Bauten.', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PvPZoneStructureDamageMultiplier', label: 'PvP-Zone Bauwerk-Schaden', tooltip: 'Zusätzlicher Schadensmultiplikator für Bauwerke in PvP-Sonderzonen.', category: 'Schaden & Resistenz', type: 'slider', min: 0.1, max: 10, step: 0.01 },
 
     // Zucht
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'TamingSpeedMultiplier', label: 'Taming-Geschwindigkeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'MatingIntervalMultiplier', label: 'Paarungs-Intervall', category: 'Zucht', type: 'slider', min: 0.01, max: 10, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'MatingSpeedMultiplier', label: 'Paarungs-Geschwindigkeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'EggHatchSpeedMultiplier', label: 'Ei-Brutzeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'BabyMatureSpeedMultiplier', label: 'Baby-Reifung', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'BabyFoodConsumptionSpeedMultiplier', label: 'Baby-Hunger', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'BabyCuddleIntervalMultiplier', label: 'Baby-Kuschel-Intervall', category: 'Zucht', type: 'slider', min: 0.01, max: 10, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'BabyCuddleGracePeriodMultiplier', label: 'Kuschel-Gnadenzeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'BabyCuddleLoseImprintQualitySpeedMultiplier', label: 'Imprint-Verlust', category: 'Zucht', type: 'slider', min: 0.01, max: 10, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'BabyImprintingStatScaleMultiplier', label: 'Imprint-Bonus', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'BabyImprintAmountMultiplier', label: 'Imprint-Häufigkeit', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'TamingSpeedMultiplier', label: 'Zähmungsgeschwindigkeit', tooltip: 'Wie schnell Dinos gezähmt werden. Höher = schnelleres Zähmen (Taming-Fortschritt steigt schneller).', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'MatingIntervalMultiplier', label: 'Paarungsintervall', tooltip: 'Abstand zwischen möglichen Paarungen. Kleiner = Paarung öfter möglich.', category: 'Zucht', type: 'slider', min: 0.01, max: 10, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'MatingSpeedMultiplier', label: 'Paarungsgeschwindigkeit', tooltip: 'Wie schnell der Paarungsvorgang abläuft. Höher = schneller bereit zur Paarung.', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'EggHatchSpeedMultiplier', label: 'Ei-Schlüpfgeschwindigkeit', tooltip: 'Wie schnell Eier ausgebrütet werden. Höher = kürzere Brutzeit.', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyMatureSpeedMultiplier', label: 'Baby-Reifungsgeschwindigkeit', tooltip: 'Wie schnell Babys aufwachsen und erwachsen werden. Höher = schnellere Reifung.', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyFoodConsumptionSpeedMultiplier', label: 'Baby-Nahrungsverbrauch', tooltip: 'Wie schnell Babys Nahrung verbrauchen. Kleiner = seltener füttern nötig.', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyCuddleIntervalMultiplier', label: 'Baby-Kuschelintervall', tooltip: 'Zeitabstand zwischen Imprint-Aufforderungen des Babys. Kleiner = häufigere Imprint-Anfragen.', category: 'Zucht', type: 'slider', min: 0.01, max: 10, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyCuddleGracePeriodMultiplier', label: 'Kuschel-Gnadenzeitraum', tooltip: 'Zeitfenster nach der Imprint-Aufforderung, in dem noch ohne Strafpunkte gekuschelt werden kann.', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyCuddleLoseImprintQualitySpeedMultiplier', label: 'Imprint-Verlustrate', tooltip: 'Wie schnell Imprint-Qualität verloren geht, wenn eine Kuschel-Aufforderung verpasst wird. Kleiner = weniger Verlust.', category: 'Zucht', type: 'slider', min: 0.01, max: 10, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyImprintingStatScaleMultiplier', label: 'Imprint-Statbonus', tooltip: 'Stärke des Stat-Bonus durch vollständiges Imprint. Höher = stärkerer Bonus für den Züchter.', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'BabyImprintAmountMultiplier', label: 'Imprint-Menge pro Kuscheln', tooltip: 'Wie viel Imprint-Prozent pro Kuschel-Aktion vergeben wird. Höher = weniger Kuschel-Aktionen bis 100%.', category: 'Zucht', type: 'slider', min: 0.1, max: 10, step: 0.1 },
 
     // Spieler-Stats (Pro Level)
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[0]', label: 'Spieler: Gesundheit', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[1]', label: 'Spieler: Ausdauer', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[2]', label: 'Spieler: Betäubung', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[3]', label: 'Spieler: Sauerstoff', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[4]', label: 'Spieler: Nahrung', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[5]', label: 'Spieler: Wasser', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[6]', label: 'Spieler: Temperatur', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[7]', label: 'Spieler: Gewicht', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[8]', label: 'Spieler: Nahkampfschaden', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[9]', label: 'Spieler: Geschwindigkeit', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[10]', label: 'Spieler: Resistenz', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[0]', label: 'Spieler: Gesundheit', tooltip: 'Bonus-Gesundheit (HP) die ein Spieler pro Levelaufstieg erhält.', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[1]', label: 'Spieler: Ausdauer', tooltip: 'Bonus-Ausdauer die ein Spieler pro Levelaufstieg erhält (bestimmt Sprint-Dauer).', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[2]', label: 'Spieler: Betäubungswiderstand', tooltip: 'Betäubungs-Widerstand (Torpidity) pro Level. Kann von Spielern nicht direkt gesteigert werden.', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[3]', label: 'Spieler: Sauerstoff', tooltip: 'Sauerstoffvorrat (Tauchzeit) den ein Spieler pro Levelaufstieg erhält.', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[4]', label: 'Spieler: Nahrung', tooltip: 'Nahrungskapazität die ein Spieler pro Levelaufstieg erhält. Höher = langsamer verhungern.', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[5]', label: 'Spieler: Wasser', tooltip: 'Wasserkapazität (Durstleiste) die ein Spieler pro Levelaufstieg erhält.', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[6]', label: 'Spieler: Temperaturtoleranz', tooltip: 'Hitze-/Kältetoleranz (Fortitude) die ein Spieler pro Levelaufstieg erhält.', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[7]', label: 'Spieler: Gewicht', tooltip: 'Tragekapazität (Gewichtslimit) die ein Spieler pro Levelaufstieg erhält.', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[8]', label: 'Spieler: Nahkampfschaden', tooltip: 'Nahkampf-Schadensbonus den ein Spieler pro Levelaufstieg erhält (in %).', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[9]', label: 'Spieler: Bewegungsgeschwindigkeit', tooltip: 'Bewegungsgeschwindigkeit die ein Spieler pro Levelaufstieg erhält.', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_Player[10]', label: 'Spieler: Crafting-Geschwindigkeit', tooltip: 'Handwerks-Geschwindigkeit die ein Spieler pro Levelaufstieg erhält (beeinflusst auch Rezept-Qualität).', category: 'Spieler-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
 
     // Dino-Stats (Pro Level)
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[0]', label: 'Gez. Dino: Gesundheit', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[1]', label: 'Gez. Dino: Ausdauer', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[2]', label: 'Gez. Dino: Betäubung', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[3]', label: 'Gez. Dino: Sauerstoff', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[4]', label: 'Gez. Dino: Nahrung', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[5]', label: 'Gez. Dino: Wasser', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[6]', label: 'Gez. Dino: Temperatur', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[7]', label: 'Gez. Dino: Gewicht', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[8]', label: 'Gez. Dino: Nahkampfschaden', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[9]', label: 'Gez. Dino: Geschwindigkeit', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[10]', label: 'Gez. Dino: Resistenz', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[0]', label: 'Gez. Dino: Gesundheit', tooltip: 'Gesundheitsbonus pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[1]', label: 'Gez. Dino: Ausdauer', tooltip: 'Ausdauerbonus pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[2]', label: 'Gez. Dino: Betäubungswiderstand', tooltip: 'Betäubungs-Widerstand pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[3]', label: 'Gez. Dino: Sauerstoff', tooltip: 'Sauerstoffvorrat (Tauchzeit) pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[4]', label: 'Gez. Dino: Nahrung', tooltip: 'Nahrungskapazität pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[5]', label: 'Gez. Dino: Wasser', tooltip: 'Wasserkapazität pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[6]', label: 'Gez. Dino: Temperaturtoleranz', tooltip: 'Temperaturtoleranz pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[7]', label: 'Gez. Dino: Gewicht', tooltip: 'Tragekapazität pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[8]', label: 'Gez. Dino: Nahkampfschaden', tooltip: 'Nahkampf-Schaden pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[9]', label: 'Gez. Dino: Bewegungsgeschwindigkeit', tooltip: 'Bewegungsgeschwindigkeit pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    { file: 'game', section: GAME_SECTION, key: 'PerLevelStatsMultiplier_DinoTamed[10]', label: 'Gez. Dino: Crafting-Geschwindigkeit', tooltip: 'Crafting-Geschwindigkeit pro Level nach dem Zähmen.', category: 'Dino-Stats (Pro Level)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
 
     // Verbrauch (Spieler)
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterWaterDrainMultiplier', label: 'Wasser-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterStaminaDrainMultiplier', label: 'Ausdauer-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterHealthRecoveryMultiplier', label: 'Leben-Verbrauchs-Intervall', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterWaterDrainMultiplier', label: 'Durstverbrauch (Spieler)', tooltip: 'Multiplikator für den Wasserverlust pro Zeiteinheit. Kleiner = weniger durstig. Standard: 1.0', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.1 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterFoodDrainMultiplier', label: 'Hungerverbrauch (Spieler)', tooltip: 'Multiplikator für den Nahrungsverlust pro Zeiteinheit. Kleiner = weniger hungrig. Standard: 1.0', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterStaminaDrainMultiplier', label: 'Ausdauerverbrauch (Spieler)', tooltip: 'Multiplikator für den Ausdauerverlust beim Sprint/Schwimmen. Kleiner = ausdauernder. Standard: 1.0', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'PlayerCharacterHealthRecoveryMultiplier', label: 'Gesundheitsregeneration (Spieler)', tooltip: 'Multiplikator für die passive HP-Regeneration. Höher = schnellere Heilung. Standard: 1.0', category: 'Verbrauch (Spieler)', type: 'slider', min: 0.1, max: 10, step: 0.01 },
 
     // Verbrauch (Gezähmte Dinos)
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'TamedDinoCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall 2', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterStaminaDrainMultiplier', label: 'Ausdauer-Verbrauchs-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterHealthRecoveryMultiplier', label: 'Leben-Verbrauchs-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'LayEggIntervalMultiplier', label: 'Ei-Lege-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'TamedDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'TamedDinoCharacterFoodDrainMultiplier', label: 'Hungerverbrauch (Gezähmt, passiv)', tooltip: 'Passiver Nahrungsverbrauch gezähmter Dinos im Stand (nicht beim Reiten). Kleiner = seltener füttern nötig.', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterFoodDrainMultiplier', label: 'Hungerverbrauch (Alle Dinos)', tooltip: 'Allgemeiner Nahrungsverbrauch aller Dinos (wild & gezähmt). Kleiner = weniger Futter benötigt.', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterStaminaDrainMultiplier', label: 'Ausdauerverbrauch (Dino)', tooltip: 'Ausdauerverlust von Dinos beim Rennen/Fliegen. Kleiner = länger durchhaltend.', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    //{ file: 'gameusersettings', section: GUS_SECTION, key: 'DinoCharacterHealthRecoveryMultiplier', label: 'Gesundheitsregeneration (Dino)', tooltip: 'Passive HP-Regeneration aller Dinos. Höher = schnellere Heilung.', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'LayEggIntervalMultiplier', label: 'Ei-Lege-Intervall', tooltip: 'Zeitabstand zwischen Eiablagen gezähmter Dinos. Kleiner = häufigere Eierproduktion.', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'TamedDinoTorporDrainMultiplier', label: 'Betäubungsabbau (Gezähmte Dinos)', tooltip: 'Wie schnell Betäubung bei gezähmten Dinos abklingt. Kleiner = länger betäubt (gut für Veterinär-Eingriffe).', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
 
     // Verbrauch (Wilde Dinos)
-    { file: 'game', section: GAME_SECTION, key: 'WildDinoCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'PassiveTameIntervalMultiplier', label: 'Passive Zähmungs-Intervall', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'game', section: GAME_SECTION, key: 'WildDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'WildDinoCharacterFoodDrainMultiplier', label: 'Hungerverbrauch (Wilde Dinos)', tooltip: 'Nahrungsverbrauch wilder Dinos. Relevant für passive Zähmung (Dino muss hungrig sein).', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'PassiveTameIntervalMultiplier', label: 'Passiv-Zähmungsintervall', tooltip: 'Zeitabstand zwischen Fütterungsschritten beim passiven Zähmen. Kleiner = schnelleres passives Zähmen.', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'WildDinoTorporDrainMultiplier', label: 'Betäubungsabbau (Wilde Dinos)', tooltip: 'Wie schnell Betäubung bei wilden Dinos abklingt. Kleiner = länger betäubt (mehr Zeit zum Zähmen).', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
 
     // Server-Optionen (Bools)
-    { file: 'game', section: GAME_SECTION, key: 'bAllowUnlimitedRespecs', label: 'Unendliche Resets erlauben', category: 'Server-Optionen', type: 'bool' },
-    { file: 'game', section: GAME_SECTION, key: 'bPassiveDefensesDamageRiderlessDinos', label: 'Passive Verteidigung schadet reitlosen Dinos', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'ServerPVE', label: 'PvE-Modus', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'ServerHardcore', label: 'Hardcore-Modus', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventOfflinePvP', label: 'Offline-PvP-Schutz', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'EnablePvPGamma', label: 'PvP-Gamma erlauben', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AdminLogging', label: 'Admin-Logging', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'GlobalVoiceChat', label: 'Globaler Voice-Chat', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'ProximityChat', label: 'Proximity-Chat', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowThirdPersonPlayer', label: 'Third Person erlauben', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'ServerCrosshair', label: 'Fadenkreuz anzeigen', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'ShowMapPlayerLocation', label: 'Position auf Karte', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'ShowFloatingDamageText', label: 'Schadenstext anzeigen', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowHitMarkers', label: 'Trefferanzeige', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowFlyerCarryPVE', label: 'Flyer dürfen tragen (PvE)', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowCaveBuildingPvE', label: 'Höhlenbau erlauben (PvE)', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'ForceAllowCaveFlyers', label: 'Flyer in Höhlen erlauben', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DisableStructureDecayPVE', label: 'Bauwerksverfall deaktivieren (PvE)', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DisableDinoDecayPvE', label: 'Dino-Verfall deaktivieren (PvE)', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvPDinoDecay', label: 'Dino-Verfall (PvP)', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'OverrideStructurePlatformPrevention', label: 'Plattform-Bau-Sperre überschreiben', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowRaidDinoFeeding', label: 'Raid-Dinos füttern', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventTribeAlliances', label: 'Tribe-Allianzen verhindern', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventDownloadSurvivors', label: 'Survivor-Download verhindern', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventDownloadItems', label: 'Item-Download verhindern', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventDownloadDinos', label: 'Dino-Download verhindern', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'NoTributeDownloads', label: 'Tribute-Downloads aus', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowAnyoneBabyImprintCuddle', label: 'Jeder darf Imprint kuscheln', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'DisableImprintDinoBuff', label: 'Imprint-Buff deaktivieren', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventDiseases', label: 'Krankheiten verhindern', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'NonPermanentDiseases', label: 'Krankheiten nicht permanent', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'EnableExtraStructurePreventionVolumes', label: 'Extra Bau-Sperrzonen', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowIntegratedSPlusStructures', label: 'S+ Strukturen erlauben', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowHideDamageSourceFromLogs', label: 'Schadensquelle aus Logs verbergen', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AlwaysNotifyPlayerLeft', label: 'Spieler-Verlassen melden', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'AlwaysNotifyPlayerJoined', label: 'Spieler-Beitritt melden', category: 'Server-Optionen', type: 'bool' },
-    { file: 'game', section: GAME_SECTION, key: 'bOnlyAllowSpecifiedEngrams', label: 'Nur erlaubte Engrams', category: 'Server-Optionen', type: 'bool' },
-    { file: 'game', section: GAME_SECTION, key: 'bAllowFlyerSpeedLeveling', label: 'Flyer Speed leveln', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'bUseSingleplayerSettings', label: 'Singleplayer-Einstellungen', category: 'Server-Optionen', type: 'bool' },
-    { file: 'game', section: GAME_SECTION, key: 'bDisableFriendlyFire', label: 'Friendly Fire deaktivieren', category: 'Server-Optionen', type: 'bool' },
-    { file: 'game', section: GAME_SECTION, key: 'bUseCorpseLocator', label: 'Leichen-Anzeige', category: 'Server-Optionen', type: 'bool' },
-    { file: 'game', section: GAME_SECTION, key: 'bDisableStructurePlacementCollision', label: 'Bau-Kollision deaktivieren', category: 'Server-Optionen', type: 'bool' },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'bAllowPlatformSaddleMultiFloors', label: 'Plattform-Sattel: mehrere Etagen', category: 'Server-Optionen', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'bAllowUnlimitedRespecs', label: 'Unbegrenzte Respecs (Mindwipe)', tooltip: 'Spieler können beliebig oft ihre Levelpunkte zurücksetzen (Mindwipe Tonic ohne Limit).', category: 'Server-Optionen', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'bPassiveDefensesDamageRiderlessDinos', label: 'Passive Verteidigung vs. reitlose Dinos', tooltip: 'Passive Verteidigungsstrukturen (Türme, Pflanzensamen X) schaden auch Dinos ohne Reiter.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'ServerPVE', label: 'PvE-Modus', tooltip: 'Aktiviert PvE-Modus: Spieler können sich gegenseitig nicht angreifen.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'ServerHardcore', label: 'Hardcore-Modus', tooltip: 'Beim Tod wird der Charakter permanent gelöscht (Permadeath).', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventOfflinePvP', label: 'Offline-PvP-Schutz', tooltip: 'Spieler und ihre Strukturen/Dinos können nicht angegriffen werden, solange sie offline sind.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'EnablePvPGamma', label: 'PvP-Gamma erlauben', tooltip: 'Spieler dürfen im PvP die Gamma-Helligkeit mit "gamma" Befehl anpassen.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AdminLogging', label: 'Admin-Aktionen protokollieren', tooltip: 'Admin-Befehle werden im Tribe-Log und auf der Karte für andere Spieler sichtbar protokolliert.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'GlobalVoiceChat', label: 'Globaler Sprachchat', tooltip: 'Alle Spieler können über Sprachchat kommunizieren, unabhängig von Entfernung oder Tribe.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'ProximityChat', label: 'Näherungs-Textkonsole', tooltip: 'Textnachrichten im lokalen Chat sind nur für nahe Spieler sichtbar.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowThirdPersonPlayer', label: 'Third-Person-Ansicht erlauben', tooltip: 'Spieler können in die Third-Person-Kamera wechseln.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'ServerCrosshair', label: 'Fadenkreuz anzeigen', tooltip: 'Zeigt ein Fadenkreuz in der Bildschirmmitte an.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'ShowMapPlayerLocation', label: 'Spielerposition auf Karte', tooltip: 'Spieler sehen ihre eigene Position als Marker auf der In-Game-Karte.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'ShowFloatingDamageText', label: 'Schwebende Schadensanzeige', tooltip: 'Zeigt Schadenszahlen schwebend über getroffenen Zielen an.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowHitMarkers', label: 'Treffermarkierungen', tooltip: 'Zeigt eine visuelle/akustische Bestätigung wenn ein Treffer landet.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowFlyerCarryPVE', label: 'Flyer dürfen tragen (PvE)', tooltip: 'Flugtiere dürfen im PvE-Modus andere Spieler, Kreaturen oder Dinos aufheben und tragen.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowCaveBuildingPvE', label: 'Höhlenbau erlauben (PvE)', tooltip: 'Erlaubt das Errichten von Bauwerken in Höhlen/Dungeons im PvE-Modus.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'ForceAllowCaveFlyers', label: 'Flyer in Höhlen erlauben', tooltip: 'Flugtiere dürfen in Höhlen und Dungeons fliegen (normalerweise verboten).', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PvPDinoDecay', label: 'Dino-Verfall im PvP', tooltip: 'Gezähmte Dinos inaktiver Spieler verfallen und werden freigegeben im PvP-Modus.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'OverrideStructurePlatformPrevention', label: 'Plattformsattel-Bausperren überschreiben', tooltip: 'Erlaubt das Bauen auf Plattformsätteln auch in normalerweise gesperrten Bereichen (z.B. Ressourcenschutz-Zonen).', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowRaidDinoFeeding', label: 'Raid-Dinos füttern', tooltip: 'Ermöglicht das Füttern und Pflegen von Titan-artigen Raid-Dinos (z.B. Titanosaur).', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventTribeAlliances', label: 'Stammesallianzen verhindern', tooltip: 'Stämme können keine Allianzen bilden – kein gemeinsamer Marker oder Zusammenarbeit über Tribe hinaus.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventDownloadSurvivors', label: 'Charakter-Transfer sperren', tooltip: 'Verhindert das Herunterladen von Charakteren aus dem ARK-Netzwerk (Obelisken/Terminals).', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventDownloadItems', label: 'Item-Transfer sperren', tooltip: 'Verhindert das Herunterladen von Items aus dem ARK-Netzwerk.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventDownloadDinos', label: 'Dino-Transfer sperren', tooltip: 'Verhindert das Herunterladen von Dinos aus dem ARK-Netzwerk.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'NoTributeDownloads', label: 'Tribute-Downloads deaktivieren', tooltip: 'Keine Downloads über das Tribute-System an Obelisken und Supply Terminals.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowAnyoneBabyImprintCuddle', label: 'Imprint für alle Spieler erlauben', tooltip: 'Jeder Spieler kann Imprint-Kuscheln bei einem Baby durchführen, nicht nur der Züchter.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'DisableImprintDinoBuff', label: 'Imprint-Bonus deaktivieren', tooltip: 'Deaktiviert den Kampf-Bonus für Dinos durch vollständiges Imprint.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'PreventDiseases', label: 'Krankheiten deaktivieren', tooltip: 'Spieler können keine Krankheiten (z.B. Leprosy) bekommen.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'NonPermanentDiseases', label: 'Krankheiten nicht permanent', tooltip: 'Krankheiten heilen automatisch von selbst aus, ohne dass ein Heilmittel benötigt wird.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'EnableExtraStructurePreventionVolumes', label: 'Zusätzliche Bausperrzonen aktivieren', tooltip: 'Aktiviert zusätzliche kartenspezifische Bausperrzonen (verhindert Blockade wichtiger Gebiete).', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowIntegratedSPlusStructures', label: 'Integrierte S+-Strukturen aktivieren', tooltip: 'Aktiviert die in ARK integrierten Structures Plus (S+) Bauteile und Funktionen.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AllowHideDamageSourceFromLogs', label: 'Schadensquelle im Log verbergen', tooltip: 'Die Quelle von Schaden wird in Todesnachrichten und Logs nicht angezeigt.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AlwaysNotifyPlayerLeft', label: 'Server-Verlassen ankündigen', tooltip: 'Alle Spieler werden benachrichtigt, wenn jemand den Server verlässt.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'AlwaysNotifyPlayerJoined', label: 'Server-Beitritt ankündigen', tooltip: 'Alle Spieler werden benachrichtigt, wenn jemand dem Server beitritt.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'bOnlyAllowSpecifiedEngrams', label: 'Nur erlaubte Engrams freischaltbar', tooltip: 'Spieler können nur explizit freigegebene Engrams (Rezepte) lernen. Benötigt eine Engram-Whitelist.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'bAllowFlyerSpeedLeveling', label: 'Flyer-Geschwindigkeit levelbar', tooltip: 'Erlaubt das Investieren von Level-Punkten in die Bewegungsgeschwindigkeit bei Flugtieren.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'bUseSingleplayerSettings', label: 'Singleplayer-Einstellungen verwenden', tooltip: 'Aktiviert das Singleplayer-Balancing (schnelleres Zähmen, andere Multiplizierungen). Nicht für Multiplayer empfohlen.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'bDisableFriendlyFire', label: 'Friendly Fire deaktivieren', tooltip: 'Stammesmitglieder und Alliierte können sich gegenseitig nicht verletzen.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'bUseCorpseLocator', label: 'Leichen-Locator aktivieren', tooltip: 'Spieler sehen die Position ihrer eigenen Leiche (mit Items) als Marker auf der Karte.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'game', section: GAME_SECTION, key: 'bDisableStructurePlacementCollision', label: 'Bauwerk-Kollision deaktivieren', tooltip: 'Bauwerke können sich überlappen und werden nicht durch andere Objekte blockiert.', category: 'Server-Optionen', type: 'bool' },
+    { file: 'gameusersettings', section: GUS_SECTION, key: 'bAllowPlatformSaddleMultiFloors', label: 'Plattformsattel: Mehrere Etagen', tooltip: 'Ermöglicht das Bauen übereinander gestapelter Stockwerke auf Plattformsätteln.', category: 'Server-Optionen', type: 'bool' },
 ];
 
 const SIMPLE_CATEGORIES = [
@@ -425,6 +428,8 @@ const categoryIcon = (cat: string): string => {
         case 'Verbrauch (Gezähmte Dinos)': return 'pi pi-heart';
         case 'Verbrauch (Wilde Dinos)': return 'pi pi-dinosaur';
         case 'Zucht': return 'pi pi-heart-fill';
+        case 'Spieler-Stats (Pro Level)': return 'pi pi-chart-bar';
+        case 'Dino-Stats (Pro Level)': return 'pi pi-chart-line';
         default: return 'pi pi-circle';
     }
 };
@@ -464,7 +469,10 @@ const setIniValue = (text: string, section: string, key: string, value: string):
     if (keyRe.test(body)) {
         newBody = body.replace(keyRe, `$1${key}=${value}`);
     } else {
-        newBody = body.replace(/\s*$/, '') + `\n${key}=${value}\n`;
+        // Don't add a trailing "\n" — the lookahead in sectionRe does NOT consume
+        // the "\n" before the next section header, so any trailing newline we add
+        // here would compound on every save and create accumulating blank lines.
+        newBody = body.replace(/\s*$/, '') + `\n${key}=${value}`;
     }
     return text.replace(m[0], header + newBody);
 };
@@ -515,6 +523,12 @@ const saveSimpleSettings = async () => {
             if (s.file === 'game') gameText = setIniValue(gameText, s.section, s.key, str);
             else gusText = setIniValue(gusText, s.section, s.key, str);
         }
+        // Cleanup: collapse 3+ consecutive blank lines to a single one and ensure
+        // exactly one trailing newline. ARK's INI parser can choke on excessive
+        // blank lines, which would cause it to discard the file and write defaults.
+        const cleanupIni = (s: string) => s.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/\s*$/, '\n');
+        gameText = cleanupIni(gameText);
+        gusText = cleanupIni(gusText);
         await Promise.all([
             arkStore.writeConfig('game', gameText),
             arkStore.writeConfig('gameusersettings', gusText),
@@ -879,6 +893,19 @@ const checkError = (error: any) => {
 
 .simple-row {
     padding-bottom: 4px;
+}
+
+.simple-tooltip-icon {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    cursor: help;
+    opacity: 0.6;
+    transition: opacity 0.15s, color 0.15s;
+}
+
+.simple-tooltip-icon:hover {
+    opacity: 1;
+    color: var(--primary-color);
 }
 
 .simple-group {
