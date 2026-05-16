@@ -20,7 +20,9 @@ export const useArkStore = defineStore('ark', {
 
         async startServer() {
             try {
-                const response = await axios.post(`https://zollneck.de/api/ark/start`, {}, {
+                const response = await axios.post(`https://zollneck.de/api/ark/start`, {
+                    username: localStorage.getItem('username'),
+                }, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('userToken')}`
                     }
@@ -33,7 +35,9 @@ export const useArkStore = defineStore('ark', {
 
         async stopServer() {
             try {
-                const response = await axios.post('https://zollneck.de/api/ark/stop', {}, {
+                const response = await axios.post('https://zollneck.de/api/ark/stop', {
+                    username: localStorage.getItem('username'),
+                }, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('userToken')}`
                     },
@@ -68,6 +72,75 @@ export const useArkStore = defineStore('ark', {
                     }
                 });
                 return response.data;
+            } catch (error) {
+                throw error;
+            }
+        },
+
+        async readConfig(file: 'game' | 'gameusersettings') {
+            try {
+                const response = await axios.get(`https://zollneck.de/api/ark/config/${file}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                    }
+                });
+                return response.data as { file: string; content: string };
+            } catch (error) {
+                throw error;
+            }
+        },
+
+        async writeConfig(file: 'game' | 'gameusersettings', content: string) {
+            try {
+                const response = await axios.post(`https://zollneck.de/api/ark/config/${file}`, {
+                    content,
+                    username: localStorage.getItem('username'),
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                    }
+                });
+                return response.data as { success: boolean; bytes: number };
+            } catch (error) {
+                throw error;
+            }
+        },
+
+        async getAuditLog() {
+            try {
+                const response = await axios.get('https://zollneck.de/api/ark/audit', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                    }
+                });
+                return response.data as Array<{
+                    audit_id: number;
+                    username: string;
+                    action: string;
+                    target: string | null;
+                    details: string | null;
+                    created_at: string;
+                }>;
+            } catch (error) {
+                throw error;
+            }
+        },
+
+        async getAdminLog() {
+            try {
+                const response = await axios.get('https://zollneck.de/api/ark/admin-log', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                    }
+                });
+                return response.data as Array<{
+                    admin_id: number;
+                    player_name: string | null;
+                    player_id: string | null;
+                    command: string;
+                    raw_line: string;
+                    created_at: string;
+                }>;
             } catch (error) {
                 throw error;
             }

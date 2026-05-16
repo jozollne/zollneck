@@ -14,6 +14,8 @@ import { PokerModule } from './poker/poker.module';
 import { Poker } from './poker/entities/history.entity';
 import { ArkModule } from './ark/ark.module';
 import { ArkCommandLog } from './ark/entities/arkCommandLog.entity';
+import { ArkAuditLog } from './ark/entities/arkAuditLog.entity';
+import { ArkAdminLog } from './ark/entities/arkAdminLog.entity';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { ArkCommandLog } from './ark/entities/arkCommandLog.entity';
       username: 'jozollne',
       password: process.env.DB_PASSWORD,
       database: 'zollneckdb',
-      entities: [Users, Contact, CommandLog, Poker, ArkCommandLog],
+      entities: [Users, Contact, CommandLog, Poker, ArkCommandLog, ArkAuditLog, ArkAdminLog],
       synchronize: true,
     }),
     AuthModule,

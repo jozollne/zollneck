@@ -234,21 +234,24 @@ const konvertorItems = computed(() => {
 
   if (authStore.isAuthenticated) {
     items.push({
-      label: "Minecraft Server",
-      icon: "pi pi-box",
-      command: () => {
-        routerStore.goToMinecraft();
-      },
-    });
-  }
-
-  if (authStore.isAuthenticated) {
-    items.push({
-      label: "ARK Server",
+      label: "Server",
       icon: "pi pi-server",
-      command: () => {
-        routerStore.goToArk();
-      },
+      items: [
+        {
+          label: "Minecraft Server",
+          icon: "pi pi-box",
+          command: () => {
+            routerStore.goToMinecraft();
+          },
+        },
+        {
+          label: "ARK Server",
+          icon: "pi pi-shield",
+          command: () => {
+            routerStore.goToArk();
+          },
+        },
+      ],
     });
   }
 
