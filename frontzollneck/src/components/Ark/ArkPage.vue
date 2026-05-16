@@ -342,10 +342,10 @@ const allSimpleSettings: SimpleSetting[] = [
     { file: 'game', section: GAME_SECTION, key: 'LayEggIntervalMultiplier', label: 'Ei-Lege-Intervall', category: 'Verbrauch (Gezähmte Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
 
     // Verbrauch (Wilde Dinos)
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'WildDinoCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'PassiveTameIntervalMultiplier', label: 'Passive Zähmungs-Intervall', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'WildDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme-Wilde-Dinos', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
-    { file: 'gameusersettings', section: GUS_SECTION, key: 'TamedDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme-Ausgenockte-Dinos', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'WildDinoCharacterFoodDrainMultiplier', label: 'Nahrungs-Verbrauchs-Intervall', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'PassiveTameIntervalMultiplier', label: 'Passive Zähmungs-Intervall', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'WildDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme-Wilde-Dinos', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
+    { file: 'game', section: GAME_SECTION, key: 'TamedDinoTorporDrainMultiplier', label: 'Betäubungs-Abnahme-Ausgenockte-Dinos', category: 'Verbrauch (Wilde Dinos)', type: 'slider', min: 0.01, max: 5, step: 0.01 },
 
     // Server-Optionen (Bools) — GameUserSettings.ini
     { file: 'gameusersettings', section: GUS_SECTION, key: 'ServerPVE', label: 'PvE-Modus', category: 'Server-Optionen', type: 'bool' },
