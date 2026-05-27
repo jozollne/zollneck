@@ -8,9 +8,10 @@ export class ArkController {
 
   @Get('status')
   @UseGuards(JwtAuthGuard)
-  async getStatus(): Promise<{ running: boolean }> {
+  async getStatus(): Promise<{ running: boolean; joinable: boolean }> {
     const running = await this.arkService.isServerRunning();
-    return { running: running };
+    const joinable = running ? await this.arkService.isServerJoinable() : false;
+    return { running, joinable };
   }
 
   @Get('getCommand')

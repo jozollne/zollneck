@@ -18,8 +18,24 @@
                     class="md:w-full w-9"></Button>
                 <Button v-if="running" :loading="loading" icon="pi pi-pause" severity="danger"
                     @click="stopServer()"></Button>
-                <Button v-if="!running" :loading="loading" icon="pi pi-play" severity="success"
-                    @click="startServer()"></Button>
+                <Button v-if="!running" :loading="loading || startingUp" :disabled="startingUp"
+                    icon="pi pi-play" severity="success" @click="startServer()"></Button>
+            </div>
+
+            <div v-if="startingUp" class="mt-3 px-1">
+                <div class="flex justify-content-between align-items-center text-sm text-color-secondary mb-1">
+                    <span>
+                        <i class="pi pi-spin pi-spinner mr-1"></i>
+                        Server lädt...
+                        <span v-if="startProgress < 99"> noch ca. {{ startRemainingLabel }}</span>
+                        <span v-else> gleich fertig...</span>
+                    </span>
+                    <span>{{ startElapsedLabel }} / ~5:00</span>
+                </div>
+                <ProgressBar :value="startProgress" :showValue="false" style="height: 0.75rem" />
+                <small class="text-color-secondary mt-1 block text-center">
+                    Du wirst automatisch benachrichtigt sobald der Server joinbar ist.
+                </small>
             </div>
 
             <form @submit.prevent="sendCommand(commandToSend)"
@@ -191,7 +207,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useArkStore } from '@/stores/ArkStore';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from "primevue/useconfirm";
@@ -207,6 +223,57 @@ const color = ref("warning")
 const status = ref("Status: Unbekannt")
 const commandToSend = ref("")
 const commandHistory = ref<{ command_id: number, username: string, command: string, response: string, created_at: string }[]>([]);;
+
+// --- Server-Start Polling ---
+const START_ESTIMATE_SECS = 300; // ARK braucht ~5 Minuten bis RCON antwortet
+const startingUp = ref(false);
+const startProgress = ref(0);
+const startElapsed = ref(0);
+let startPollTimer: ReturnType<typeof setInterval> | null = null;
+let startProgressTimer: ReturnType<typeof setInterval> | null = null;
+
+const startElapsedLabel = computed(() => {
+    const m = Math.floor(startElapsed.value / 60);
+    const s = startElapsed.value % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+});
+
+const startRemainingLabel = computed(() => {
+    const remaining = Math.max(0, START_ESTIMATE_SECS - startElapsed.value);
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+});
+
+const stopStartPolling = (joinable = false) => {
+    if (startProgressTimer) { clearInterval(startProgressTimer); startProgressTimer = null; }
+    if (startPollTimer) { clearInterval(startPollTimer); startPollTimer = null; }
+    startingUp.value = false;
+    if (joinable) {
+        startProgress.value = 100;
+        running.value = true;
+        color.value = 'success';
+        status.value = 'Status: Läuft';
+        toast.add({ severity: 'success', summary: 'Server bereit!', detail: `ARK ist jetzt joinbar! (${startElapsedLabel.value} min)`, life: 8000 });
+    }
+};
+
+const beginStartPolling = () => {
+    if (startingUp.value) return;
+    startingUp.value = true;
+    startProgress.value = 0;
+    startElapsed.value = 0;
+    startProgressTimer = setInterval(() => {
+        startElapsed.value++;
+        startProgress.value = Math.min(99, Math.round((startElapsed.value / START_ESTIMATE_SECS) * 100));
+    }, 1000);
+    startPollTimer = setInterval(async () => {
+        try {
+            const resp = await arkStore.getStatus();
+            if (resp.joinable) stopStartPolling(true);
+        } catch { /* Verbindungsfehler während Start ignorieren */ }
+    }, 5000);
+};
 
 const configDialogVisible = ref(false);
 const configLoading = ref(false);
@@ -651,6 +718,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
     window.removeEventListener('beforeunload', handleBeforeUnload);
+    stopStartPolling(false);
 });
 
 
@@ -715,20 +783,31 @@ const sendCommand = async (command: string) => {
 
 const getStatus = async () => {
     try {
-        const response = await arkStore.getStatus()
-        if (response.running == true) {
-            toast.add({ severity: 'success', summary: 'Server ist an!', detail: "Der ARK Server ist an!", life: 3000 });
-            running.value = true
-            color.value = "success"
-            status.value = "Status: Läuft"
+        const response = await arkStore.getStatus();
+        if (response.joinable) {
+            if (startingUp.value) {
+                stopStartPolling(true);
+                return;
+            }
+            toast.add({ severity: 'success', summary: 'Server ist an!', detail: 'Der ARK Server ist an!', life: 3000 });
+            running.value = true;
+            color.value = 'success';
+            status.value = 'Status: Läuft';
+        } else if (response.running) {
+            if (!startingUp.value) beginStartPolling();
+            running.value = false;
+            color.value = 'warning';
+            status.value = 'Status: Startet...';
+            toast.add({ severity: 'warn', summary: 'Server startet!', detail: 'ARK lädt noch – bitte warten...', life: 4000 });
         } else {
-            toast.add({ severity: 'success', summary: 'Server ist aus!', detail: "Der ARK Server ist aus!", life: 3000 });
-            color.value = "danger"
-            running.value = false
-            status.value = "Status: Aus"
+            if (startingUp.value) stopStartPolling(false);
+            toast.add({ severity: 'info', summary: 'Server ist aus!', detail: 'Der ARK Server ist aus!', life: 3000 });
+            color.value = 'danger';
+            running.value = false;
+            status.value = 'Status: Aus';
         }
     } catch (error: any) {
-        checkError(error)
+        checkError(error);
     }
 };
 
@@ -742,12 +821,16 @@ const startServer = async () => {
                 const response = await arkStore.startServer();
                 if (!response.success) {
                     toast.add({ severity: 'warn', summary: 'Bereits gestartet oder Fehler!', detail: 'Der ARK Server ist bereits aktiv oder es ist ein Fehler aufgetreten', life: 3000 });
+                    await getStatus();
+                } else {
+                    status.value = 'Status: Startet...';
+                    color.value = 'warning';
+                    beginStartPolling();
                 }
             } catch (error: any) {
-                checkError(error)
+                checkError(error);
             } finally {
                 loading.value = false;
-                await getStatus();
             }
         }
     );

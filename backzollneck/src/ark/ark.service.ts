@@ -2,7 +2,7 @@ import { Injectable, BadRequestException, OnModuleInit, OnModuleDestroy, Logger 
 import { InjectRepository } from '@nestjs/typeorm';
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
-import { promises as fs } from 'fs';
+import { promises as fs, createWriteStream } from 'fs';
 
 const execAsync = promisify(exec);
 
@@ -74,6 +74,8 @@ export class ArkService implements OnModuleInit, OnModuleDestroy {
 
     private readonly arkUser = 'arkserver';
     private readonly arkScript = '/opt/arkserver/arkserver';
+    private readonly arkSaveDir = '/opt/arkserver/serverfiles/ShooterGame/Saved/TheIsland';
+    private readonly backupDir = '/opt/arkserver/backup';
     private adminLogPollTimer: NodeJS.Timeout | null = null;
     private readonly ADMIN_POLL_INTERVAL_MS = 30_000;
 
@@ -118,6 +120,20 @@ export class ArkService implements OnModuleInit, OnModuleDestroy {
         });
     }
 
+    /**
+     * Prüft ob der ARK-Server tatsächlich joinbar ist (RCON erreichbar).
+     * Prozess läuft → true bedeutet noch nicht, dass man joinen kann.
+     * Erst wenn RCON antwortet ist die Welt vollständig geladen.
+     */
+    async isServerJoinable(): Promise<boolean> {
+        try {
+            await this.rconExec('listplayers');
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     async startServer(username?: string): Promise<boolean> {
         return new Promise(async (resolve, reject) => {
             if (await this.isServerRunning()) {
@@ -135,18 +151,213 @@ export class ArkService implements OnModuleInit, OnModuleDestroy {
         });
     }
 
-    async stopServer(username?: string): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            if (!(await this.isServerRunning())) {
-                return resolve(false);
+    /**
+     * Macht ein saveworld per RCON (nur falls Server läuft), wartet bis
+     * TheIsland.ark vollständig geschrieben ist (size + mtime stabil) und
+     * kopiert die Datei dann atomar nach /opt/arkserver/backup/ mit Zeitstempel.
+     * Wirft nicht — Fehler werden geloggt aber blockieren den Aufrufer nicht.
+     *
+     * Wichtig: Die Wartephase verhindert die Race-Condition zwischen
+     * saveworld und LGSM-Stop, die früher zu halbgeschriebenen .ark-Dateien
+     * geführt hat. Erst wenn die Welt sauber auf Platte liegt, geben wir
+     * den Aufrufer (z.B. stopServer) frei.
+     *
+     * Deduplizierung: Parallele Aufrufe (z.B. Simple-Editor schreibt beide INIs
+     * gleichzeitig) und Aufrufe innerhalb von BACKUP_COALESCE_MS teilen sich
+     * denselben Backup-Vorgang — sonst gäbe es pro Klick zwei .ark-Kopien.
+     */
+    private static readonly BACKUP_COALESCE_MS = 10_000;
+    private static readonly SAVE_STABLE_TIMEOUT_MS = 60_000;
+    private static readonly SAVE_STABLE_HOLD_MS = 2_000;
+    private backupInFlight: Promise<string> | null = null;
+    private lastBackupAt = 0;
+    private lastBackupResult = '';
+
+    private async saveAndBackup(username: string | undefined, reason: string): Promise<string> {
+        // Wenn aktuell schon ein Backup läuft, warten wir auf dessen Ergebnis.
+        if (this.backupInFlight) {
+            const shared = await this.backupInFlight;
+            this.logAudit(username, 'backup', reason, `[${reason}] coalesced -> ${shared}`);
+            return shared;
+        }
+        // Wenn das letzte Backup ganz frisch ist, überspringen wir.
+        const sinceLast = Date.now() - this.lastBackupAt;
+        if (sinceLast < ArkService.BACKUP_COALESCE_MS && this.lastBackupResult) {
+            const skipped = `[${reason}] coalesced (vor ${sinceLast}ms) -> ${this.lastBackupResult}`;
+            this.logAudit(username, 'backup', reason, skipped);
+            return skipped;
+        }
+
+        this.backupInFlight = this.runBackup(username, reason);
+        try {
+            const res = await this.backupInFlight;
+            this.lastBackupAt = Date.now();
+            this.lastBackupResult = res;
+            return res;
+        } finally {
+            this.backupInFlight = null;
+        }
+    }
+
+    private async runBackup(username: string | undefined, reason: string): Promise<string> {
+        const parts: string[] = [];
+        const arkFile = `${this.arkSaveDir}/TheIsland.ark`;
+        let serverRunning = false;
+
+        // 1) saveworld (best effort, nur wenn Server läuft)
+        try {
+            serverRunning = await this.isServerRunning();
+            if (serverRunning) {
+                const resp = await this.rconExec('saveworld');
+                parts.push(`saveworld: ${(resp || '').trim().substring(0, 200) || 'ok'}`);
+            } else {
+                parts.push('saveworld: übersprungen (Server aus)');
             }
-            exec(`sudo -u ${this.arkUser} ${this.arkScript} stop`, (error, stdout, stderr) => {
+        } catch (e: any) {
+            parts.push(`saveworld FEHLER: ${e?.message || e}`);
+        }
+
+        // 2) Warten bis TheIsland.ark vollständig geschrieben ist (mtime+size stabil)
+        if (serverRunning) {
+            try {
+                const waited = await this.waitForFileStable(
+                    arkFile,
+                    ArkService.SAVE_STABLE_TIMEOUT_MS,
+                    ArkService.SAVE_STABLE_HOLD_MS,
+                );
+                parts.push(`stable nach ${waited}ms`);
+            } catch (e: any) {
+                parts.push(`wait stable FEHLER: ${e?.message || e}`);
+            }
+        }
+
+        // 3) Aktuelle TheIsland.ark sichern (via sudo cat, weil mode 600)
+        try {
+            await fs.mkdir(this.backupDir, { recursive: true });
+            const ts = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').substring(0, 19);
+            const dst = `${this.backupDir}/TheIsland_${ts}.ark`;
+            const size = await this.sudoCopyAsArkserver(arkFile, dst);
+            parts.push(`backup: ${dst} (${size} B)`);
+        } catch (e: any) {
+            parts.push(`backup FEHLER: ${e?.message || e}`);
+        }
+
+        const details = `[${reason}] ${parts.join(' | ')}`;
+        this.logAudit(username, 'backup', reason, details);
+        return details;
+    }
+
+    /**
+     * Pollt size + mtime von `path` und kehrt zurück sobald beide für
+     * mindestens `stableMs` unverändert sind. Wirft bei Timeout.
+     */
+    private async waitForFileStable(path: string, timeoutMs: number, stableMs: number): Promise<number> {
+        const start = Date.now();
+        let lastSize = -1;
+        let lastMtime = -1;
+        let stableSince = 0;
+        while (Date.now() - start < timeoutMs) {
+            try {
+                const s = await fs.stat(path);
+                const size = s.size;
+                const mtime = s.mtimeMs;
+                if (size > 0 && size === lastSize && mtime === lastMtime) {
+                    if (!stableSince) stableSince = Date.now();
+                    if (Date.now() - stableSince >= stableMs) {
+                        return Date.now() - start;
+                    }
+                } else {
+                    stableSince = 0;
+                    lastSize = size;
+                    lastMtime = mtime;
+                }
+            } catch {
+                // Datei kurz weg (ARK rotiert via temp+rename) — weiter pollen
+                stableSince = 0;
+            }
+            await new Promise((r) => setTimeout(r, 300));
+        }
+        throw new Error(`Datei nicht stabil nach ${timeoutMs}ms: ${path}`);
+    }
+
+    /**
+     * Liest `src` als arkserver-User per `sudo cat` und schreibt das Ergebnis
+     * nach `dst` (im backupDir, von node-User schreibbar). Liefert die Anzahl
+     * der kopierten Bytes. Wirft bei Fehler.
+     */
+    private async sudoCopyAsArkserver(src: string, dst: string): Promise<number> {
+        return new Promise<number>((resolve, reject) => {
+            const out = createWriteStream(dst);
+            const child = spawn('sudo', ['-n', '-u', this.arkUser, '/bin/cat', src], {
+                stdio: ['ignore', 'pipe', 'pipe'],
+            });
+            let stderr = '';
+            let bytes = 0;
+            let settled = false;
+            const fail = (err: Error) => {
+                if (settled) return;
+                settled = true;
+                try { child.kill(); } catch { /* ignore */ }
+                out.destroy();
+                fs.unlink(dst).catch(() => { /* ignore */ });
+                reject(err);
+            };
+            child.stderr.on('data', (d) => { stderr += d.toString(); });
+            child.stdout.on('data', (d: Buffer) => { bytes += d.length; });
+            child.stdout.pipe(out);
+            child.on('error', fail);
+            out.on('error', fail);
+            child.on('close', (code) => {
+                if (settled) return;
+                if (code === 0) {
+                    out.end(() => {
+                        if (settled) return;
+                        settled = true;
+                        resolve(bytes);
+                    });
+                } else {
+                    fail(new Error(`sudo cat exit ${code}: ${stderr.trim() || 'unknown'}`));
+                }
+            });
+        });
+    }
+
+    async stopServer(username?: string): Promise<boolean> {
+        if (!(await this.isServerRunning())) {
+            return false;
+        }
+        // Vor dem Stoppen: saveworld + wait stable + Welt-Backup. Erst danach
+        // weitermachen — sonst riskieren wir eine halbgeschriebene TheIsland.ark.
+        await this.saveAndBackup(username, 'pre-stop');
+
+        // Sauberer Shutdown via RCON DoExit (statt LGSM-SIGINT-Kill, der die
+        // Engine bisher mitten im Shutdown-Save erwischt hat). Wir warten
+        // bis der Prozess wirklich weg ist, dann ruft LGSM-Stop nur noch
+        // seine Statusdateien auf.
+        try {
+            await this.rconExec('DoExit');
+        } catch (e: any) {
+            this.logAudit(username, 'stop', 'doexit', `DoExit FEHLER: ${e?.message || e}`);
+        }
+
+        // Bis zu 60s auf Prozess-Exit warten
+        const deadline = Date.now() + 60_000;
+        while (Date.now() < deadline && (await this.isServerRunning())) {
+            await new Promise((r) => setTimeout(r, 1000));
+        }
+        const stillRunning = await this.isServerRunning();
+        if (stillRunning) {
+            this.logAudit(username, 'stop', 'doexit', 'Prozess nach 60s noch da — überlasse LGSM den Kill');
+        }
+
+        return new Promise<boolean>((resolve, reject) => {
+            exec(`sudo -u ${this.arkUser} ${this.arkScript} stop`, (error) => {
                 if (error) {
                     console.error(`Error stopping ARK server: ${error}`);
                     this.logAudit(username, 'stop', null, `FEHLER: ${error.message}`);
                     return reject(`Failed to stop server: ${error.message}`);
                 }
-                this.logAudit(username, 'stop', null, 'Server gestoppt');
+                this.logAudit(username, 'stop', null, stillRunning ? 'Server gestoppt (via LGSM Kill)' : 'Server gestoppt (graceful)');
                 resolve(true);
             });
         });
@@ -378,6 +589,9 @@ export class ArkService implements OnModuleInit, OnModuleDestroy {
             throw new BadRequestException('content must be a string');
         }
         const path = this.resolveConfigPath(file);
+        // Vor jedem Config-Write: saveworld + Welt-Backup als Sicherheitsnetz, falls
+        // die neue Config beim nächsten Start die Welt zerschießt.
+        await this.saveAndBackup(username, `pre-config-write:${file}`);
         // Vorher altes File für Diff + Encoding-Erkennung einlesen (best effort)
         let oldContent = '';
         let enc: IniEncoding = 'utf16le';
