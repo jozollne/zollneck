@@ -8,11 +8,12 @@ export const useYoutubeStore = defineStore('upload', {
         downloadProgress: ref(0),
     }),
     actions: {
-        async downloadFileFromYoutube(url: string, clientId: string, format: boolean) {
+        async downloadFileFromYoutube(url: string, clientId: string, format: boolean, resolution: string = 'best') {
             const response = await axios.post(`https://zollneck.de/api/youtube/downloadFromYoutube`, {
                 url: url,
                 clientId: clientId,
-                format: format
+                format: format,
+                resolution: resolution
             });
             return response.data;
         },
@@ -21,10 +22,13 @@ export const useYoutubeStore = defineStore('upload', {
             const response = await axios.get(`https://zollneck.de/api/youtube/downloadFromServer/${fileId}`, {
                 responseType: 'blob',
                 onDownloadProgress: (progressEvent) => {
-                    const total =  progressEvent.total || 1;
-                    const progress = 50 + Math.round((progressEvent.loaded * 50) / total);
-                    this.downloadProgress = progress;
-                }});
+                    const total = progressEvent.total || 1;
+                    const loaded = progressEvent.loaded;
+                    // Map download progress (0-100%) to range 50-100%
+                    const progress = 50 + Math.round((loaded * 50) / total);
+                    this.downloadProgress = Math.min(progress, 100);
+                }
+            });
             return response;
         },
 

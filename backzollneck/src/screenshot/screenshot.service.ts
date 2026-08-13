@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as moment from 'moment';
-import sharp from 'sharp';
 import * as fs from 'fs';
+const sharp = require('sharp');
 
 @Injectable()
 export class ScreenshotService {

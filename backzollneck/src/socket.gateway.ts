@@ -10,10 +10,10 @@ export class SocketGateway implements OnGatewayConnection {
     console.log(`Client connected: ${client.id}`);
   }
 
-  handleYoutubeDownloadProgress(clientId: string, progress: number) {
+  handleYoutubeDownloadProgress(clientId: string, progress: number, infoText?: string) {
     const client = this.server.sockets.sockets.get(clientId);
     if (client) {
-      client.emit('downloadProgress', progress);
+      client.emit('downloadProgress', { progress, infoText });
     }
   }
   

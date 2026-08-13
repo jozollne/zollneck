@@ -7,9 +7,9 @@ export class YoutubeController {
   constructor(private readonly youtubeService: YoutubeService) { }
 
   @Post('downloadFromYoutube')
-  async download(@Body('url') url: string, @Body('clientId') clientId: string, @Body('format') format: boolean) {
+  async download(@Body('url') url: string, @Body('clientId') clientId: string, @Body('format') format: boolean, @Body('resolution') resolution: string) {
     try {
-      const result = await this.youtubeService.downloadVideoFromYoutube(url, clientId, format);
+      const result = await this.youtubeService.downloadVideoFromYoutube(url, clientId, format, resolution);
       return result
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
