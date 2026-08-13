@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as moment from 'moment';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 import * as fs from 'fs';
 
 @Injectable()

@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import * as ytdl from '@distube/ytdl-core';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,57 +20,48 @@ export class YoutubeService {
       throw new Error('Ungültige URL');
     }
     try {
-      const videoId = ytdl.getURLVideoID(url);
-      const info = await ytdl.getInfo(videoId);
-
       const fileId = uuidv4();
-      const videoFilePath = path.join('/media/tempfiles/', `${fileId}_video.mp4`);
-      const audioFilePath = path.join('/media/tempfiles/', `${fileId}_audio.mp4`);
-      const finalFilePath = path.join('/media/tempfiles/', `${fileId}.${format ? 'mp4' : 'mp3'}`);
-      const title = info.videoDetails.title.replace(/[^a-zA-Z0-9]/g, '_'); // Ersetzt Sonderzeichen im Titel
+      const tempDir = '/media/tempfiles';
+      const finalFilePath = path.join(tempDir, `${fileId}.${format ? 'mp4' : 'mp3'}`);
 
-      const videoStream = ytdl(url, { quality: 'highestvideo' });
-      const audioStream = ytdl(url, { quality: 'highestaudio' });
+      // Get video title first
+      const { stdout: titleOutput } = await exec(`yt-dlp --get-title "${url}"`);
+      const title = titleOutput.trim().replace(/[^a-zA-Z0-9]/g, '_');
+      
+      this.youtubeGateway.handleYoutubeDownloadProgress(clientSocketId, 10);
 
-      videoStream.pipe(fs.createWriteStream(videoFilePath));
-      audioStream.pipe(fs.createWriteStream(audioFilePath));
+      // Download with yt-dlp
+      return new Promise((resolve, reject) => {
+        const ytDlpOptions = format 
+          ? `-f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" --merge-output-format mp4`
+          : `-f bestaudio --extract-audio --audio-format mp3`;
 
-      let videoDownloaded = 0;
-      let audioDownloaded = 0;
+        const command = `yt-dlp ${ytDlpOptions} -o "${finalFilePath}" "${url}"`;
+        
+        const child = childProcess.exec(command, (error, stdout, stderr) => {
+          if (error) {
+            console.error('yt-dlp error:', stderr);
+            reject(new HttpException(`Fehler beim Herunterladen: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR));
+            return;
+          }
+          this.fileMap.set(fileId, title);
+          this.youtubeGateway.handleYoutubeDownloadProgress(clientSocketId, 100);
+          resolve({ fileId });
+        });
 
-      videoStream.on('progress', (_, downloaded, total) => {
-        videoDownloaded = downloaded;
-        const progress = Math.round((videoDownloaded + audioDownloaded) * 50 / total);
-        this.youtubeGateway.handleYoutubeDownloadProgress(clientSocketId, progress);
+        // Track progress
+        let lastProgress = 10;
+        child.stderr?.on('data', (data: string) => {
+          const progressMatch = data.match(/(\d+\.?\d*)%/);
+          if (progressMatch) {
+            const progress = Math.min(95, Math.floor(parseFloat(progressMatch[1])));
+            if (progress > lastProgress) {
+              lastProgress = progress;
+              this.youtubeGateway.handleYoutubeDownloadProgress(clientSocketId, progress);
+            }
+          }
+        });
       });
-
-      audioStream.on('progress', (_, downloaded, total) => {
-        audioDownloaded = downloaded;
-        const progress = Math.round((videoDownloaded + audioDownloaded) * 50 / total);
-        this.youtubeGateway.handleYoutubeDownloadProgress(clientSocketId, progress);
-      });
-
-      await Promise.all([
-        new Promise((resolve, reject) => {
-          videoStream.on('finish', () => resolve(videoFilePath));
-          videoStream.on('error', error => reject(new HttpException(`Fehler beim Herunterladen des Videos: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR)));
-        }),
-        new Promise((resolve, reject) => {
-          audioStream.on('finish', () => resolve(audioFilePath));
-          audioStream.on('error', error => reject(new HttpException(`Fehler beim Herunterladen des Audios: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR)));
-        }),
-      ]);
-
-      if (format) {
-        await exec(`ffmpeg -i "${videoFilePath}" -i "${audioFilePath}" -c:v copy -c:a aac "${finalFilePath}"`);
-      } else {
-        await exec(`ffmpeg -i "${audioFilePath}" "${finalFilePath}"`);
-      }
-
-      await fs.promises.unlink(videoFilePath);
-      await fs.promises.unlink(audioFilePath);
-      this.fileMap.set(fileId, title);
-      return { fileId };
     } catch (error) {
       console.error(error);
       throw new HttpException(`Fehler beim Herunterladen des Videos: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
