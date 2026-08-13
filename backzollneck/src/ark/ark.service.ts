@@ -126,12 +126,9 @@ export class ArkService implements OnModuleInit, OnModuleDestroy {
      * Erst wenn RCON antwortet ist die Welt vollständig geladen.
      */
     async isServerJoinable(): Promise<boolean> {
-        try {
-            await this.rconExec('listplayers');
-            return true;
-        } catch {
-            return false;
-        }
+        const timeout = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 3000));
+        const check = this.rconExec('listplayers').then(() => true).catch(() => false);
+        return Promise.race([check, timeout]);
     }
 
     async startServer(username?: string): Promise<boolean> {

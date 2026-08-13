@@ -32,7 +32,7 @@ export class ArkController {
     try {
       const response = await this.arkService.startServer(username);
       return { success: response };
-    } catch (error) {
+   } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

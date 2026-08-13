@@ -18,24 +18,16 @@
                     class="md:w-full w-9"></Button>
                 <Button v-if="running" :loading="loading" icon="pi pi-pause" severity="danger"
                     @click="stopServer()"></Button>
-                <Button v-if="!running" :loading="loading || startingUp" :disabled="startingUp"
-                    icon="pi pi-play" severity="success" @click="startServer()"></Button>
+                <Button v-if="!running" :loading="loading" icon="pi pi-play" severity="success"
+                    @click="startServer()"></Button>
             </div>
 
-            <div v-if="startingUp" class="mt-3 px-1">
-                <div class="flex justify-content-between align-items-center text-sm text-color-secondary mb-1">
-                    <span>
-                        <i class="pi pi-spin pi-spinner mr-1"></i>
-                        Server lädt...
-                        <span v-if="startProgress < 99"> noch ca. {{ startRemainingLabel }}</span>
-                        <span v-else> gleich fertig...</span>
-                    </span>
-                    <span>{{ startElapsedLabel }} / ~5:00</span>
-                </div>
+            <div v-if="startingUp" class="mt-3">
                 <ProgressBar :value="startProgress" :showValue="false" style="height: 0.75rem" />
-                <small class="text-color-secondary mt-1 block text-center">
-                    Du wirst automatisch benachrichtigt sobald der Server joinbar ist.
-                </small>
+                <div class="flex justify-content-between text-xs text-color-secondary mt-1">
+                    <span>Server startet...</span>
+                    <span>{{ startElapsedLabel }} / ~1:30</span>
+                </div>
             </div>
 
             <form @submit.prevent="sendCommand(commandToSend)"
@@ -225,7 +217,7 @@ const commandToSend = ref("")
 const commandHistory = ref<{ command_id: number, username: string, command: string, response: string, created_at: string }[]>([]);;
 
 // --- Server-Start Polling ---
-const START_ESTIMATE_SECS = 300; // ARK braucht ~5 Minuten bis RCON antwortet
+const START_ESTIMATE_SECS = 90; // ARK braucht ~1,5 Minuten bis RCON antwortet
 const startingUp = ref(false);
 const startProgress = ref(0);
 const startElapsed = ref(0);
@@ -783,31 +775,20 @@ const sendCommand = async (command: string) => {
 
 const getStatus = async () => {
     try {
-        const response = await arkStore.getStatus();
-        if (response.joinable) {
-            if (startingUp.value) {
-                stopStartPolling(true);
-                return;
-            }
-            toast.add({ severity: 'success', summary: 'Server ist an!', detail: 'Der ARK Server ist an!', life: 3000 });
-            running.value = true;
-            color.value = 'success';
-            status.value = 'Status: Läuft';
-        } else if (response.running) {
-            if (!startingUp.value) beginStartPolling();
-            running.value = false;
-            color.value = 'warning';
-            status.value = 'Status: Startet...';
-            toast.add({ severity: 'warn', summary: 'Server startet!', detail: 'ARK lädt noch – bitte warten...', life: 4000 });
+        const response = await arkStore.getStatus()
+        if (response.running == true) {
+            toast.add({ severity: 'success', summary: 'Server ist an!', detail: "Der ARK Server ist an!", life: 3000 });
+            running.value = true
+            color.value = "success"
+            status.value = "Status: Läuft"
         } else {
-            if (startingUp.value) stopStartPolling(false);
-            toast.add({ severity: 'info', summary: 'Server ist aus!', detail: 'Der ARK Server ist aus!', life: 3000 });
-            color.value = 'danger';
-            running.value = false;
-            status.value = 'Status: Aus';
+            toast.add({ severity: 'success', summary: 'Server ist aus!', detail: "Der ARK Server ist aus!", life: 3000 });
+            color.value = "danger"
+            running.value = false
+            status.value = "Status: Aus"
         }
     } catch (error: any) {
-        checkError(error);
+        checkError(error)
     }
 };
 
@@ -821,16 +802,12 @@ const startServer = async () => {
                 const response = await arkStore.startServer();
                 if (!response.success) {
                     toast.add({ severity: 'warn', summary: 'Bereits gestartet oder Fehler!', detail: 'Der ARK Server ist bereits aktiv oder es ist ein Fehler aufgetreten', life: 3000 });
-                    await getStatus();
-                } else {
-                    status.value = 'Status: Startet...';
-                    color.value = 'warning';
-                    beginStartPolling();
                 }
             } catch (error: any) {
-                checkError(error);
+                checkError(error)
             } finally {
                 loading.value = false;
+                beginStartPolling();
             }
         }
     );
