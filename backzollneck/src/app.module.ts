@@ -16,6 +16,8 @@ import { ArkModule } from './ark/ark.module';
 import { ArkCommandLog } from './ark/entities/arkCommandLog.entity';
 import { ArkAuditLog } from './ark/entities/arkAuditLog.entity';
 import { ArkAdminLog } from './ark/entities/arkAdminLog.entity';
+import { SharedLink } from './cloud/entities/shared-link.entity';
+import { SharedLinkAccessLog } from './cloud/entities/shared-link-access-log.entity';
 
 @Module({
   imports: [
@@ -26,7 +28,7 @@ import { ArkAdminLog } from './ark/entities/arkAdminLog.entity';
       username: 'jozollne',
       password: process.env.DB_PASSWORD,
       database: 'zollneckdb',
-      entities: [Users, Contact, CommandLog, Poker, ArkCommandLog, ArkAuditLog, ArkAdminLog],
+      entities: [Users, Contact, CommandLog, Poker, ArkCommandLog, ArkAuditLog, ArkAdminLog, SharedLink, SharedLinkAccessLog],
       synchronize: true,
     }),
     AuthModule,

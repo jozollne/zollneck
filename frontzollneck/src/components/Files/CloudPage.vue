@@ -34,7 +34,15 @@
           </div>
         </template>
       </Column>
-      <Column :style="{ width: '1100px' }" field="name" header="Dateiname"></Column>
+      <Column :style="{ width: '900px' }" field="name" header="Dateiname">
+        <template #body="{ data }">
+          <div class="flex align-items-center gap-2">
+            <span>{{ data.name }}</span>
+            <Tag v-if="sharedPaths.has(data.path)" value="Geteilt" icon="pi pi-share-alt" severity="info"
+              class="cursor-pointer" @click.stop="openManageShares(data)" />
+          </div>
+        </template>
+      </Column>
       <Column :style="{ width: '110px' }" field="size" header="Größe"></Column>
       <Column :style="{ width: '240px' }" field="created" header="Erstellt" sortable>
       <template #body="{ data }">
@@ -49,6 +57,12 @@
           </div>
         </template>
       </Column>
+      <Column :style="{ width: '60px' }">
+        <template #body="{ data }">
+          <Button @click="openShareDialog(data, $event)" icon="pi pi-share-alt" severity="secondary"
+            v-tooltip.top="'Teilen'" :disabled="data.downloading || data.uploading"></Button>
+        </template>
+      </Column>
       <Column :style="{ width: '85px' }">
         <template #body="{ data }">
           <Button @click="onDelete(data, $event)" icon="pi pi-trash"
@@ -58,14 +72,18 @@
     </DataTable>
 
     </div>
+
+    <ShareDialog v-model:visible="shareDialogVisible" :items="shareDialogItems" @created="onShareCreated" />
+    <ManageSharesDialog v-model:visible="manageSharesVisible" :path="manageSharesPath" @changed="onShareChanged" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, type Ref } from 'vue';
+import { onMounted, onUnmounted, ref, computed, type Ref } from 'vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
+import Tag from 'primevue/tag';
 import { useCloudStore } from '@/stores/CloudStore';
 import { useToast } from "primevue/usetoast";
 import { AxiosError, HttpStatusCode } from 'axios';
@@ -74,6 +92,8 @@ import { Socket } from 'socket.io-client';
 import { useAuthStore } from '@/stores/AuthStore';
 import { useConfirm } from "primevue/useconfirm";
 import { useRouter, useRoute } from 'vue-router';
+import ShareDialog from './ShareDialog.vue';
+import ManageSharesDialog from './ManageSharesDialog.vue';
 
 let client: Socket;
 
@@ -88,8 +108,46 @@ const files = ref<{ name: string, path: string, size: string, created: Date | St
 const fileUpload: Ref = ref(null);
 const activeDownloadOrUpload = ref(false)
 
-const test = () => {
-}
+const shareDialogVisible = ref(false);
+const shareDialogItems = ref<{ name: string; path: string; isFile: boolean }[]>([]);
+const manageSharesVisible = ref(false);
+const manageSharesPath = ref('');
+const sharedPaths = ref<Set<string>>(new Set());
+
+const openShareDialog = (file: { name: string; path: string; isFile: boolean }, event: any) => {
+  event.stopPropagation();
+  shareDialogItems.value = [{ name: file.name, path: file.path, isFile: file.isFile }];
+  shareDialogVisible.value = true;
+};
+
+const openManageShares = (file: { path: string }) => {
+  manageSharesPath.value = file.path;
+  manageSharesVisible.value = true;
+};
+
+const onShareCreated = () => {
+  refreshSharedPaths();
+};
+
+const onShareChanged = () => {
+  refreshSharedPaths();
+};
+
+const refreshSharedPaths = async () => {
+  if (files.value.length === 0) {
+    sharedPaths.value = new Set();
+    return;
+  }
+  try {
+    const result = await cloudStore.lookupSharedLinks(files.value.map(f => f.path));
+    const activePaths = Object.entries(result)
+      .filter(([, links]) => (links as any[]).some((l: any) => l.status === 'active'))
+      .map(([p]) => p);
+    sharedPaths.value = new Set(activePaths);
+  } catch (error) {
+    // Freigabe-Status konnte nicht geladen werden, Ansicht bleibt ohne Badges.
+  }
+};
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
   if (activeDownloadOrUpload.value) {
@@ -169,7 +227,7 @@ const goHome = async () => {
 };
 
 
-const onUpload = () => {
+const onUpload = async () => {
   authStore.checkUserToken()
   if (authStore.isAuthenticated == false) {
     toast.add({ severity: 'error', summary: 'Session abgelaufen!', detail: 'Aktion nicht durchgeführt, bitte lade die Seite neu.', group: 'sessionExpired' });
@@ -177,44 +235,56 @@ const onUpload = () => {
   }
   if (fileUpload.value) {
     const uploadedFiles = fileUpload.value.files;
-    uploadedFiles.forEach(async (file: any) => {
+    
+    // Use for...of instead of forEach for proper async handling
+    for (const file of uploadedFiles) {
       if (file.size > 70000000000) {
         toast.add({ severity: 'error', summary: 'Datei zu groß!', detail: 'Maximal können 70Gb hochgeladen werden.' });
-      } else {
-        const newFile = {
-          name: file.name,
-          path: "null",
-          size: formatBytes(file.size),
-          created: "Gearde eben",
-          downloading: false,
-          uploading: true,
-          progress: 0,
-          isFile: true
-        };
-        files.value.push(newFile);
+        continue;
       }
-      const fileInProgress = files.value.find(f => f.name === file.name && f.uploading);
+      
+      const newFile = {
+        name: file.name,
+        path: "null",
+        size: formatBytes(file.size),
+        created: "Gerade eben",
+        downloading: false,
+        uploading: true,
+        progress: 0,
+        isFile: true
+      };
+      files.value.push(newFile);
+      
+      // Get reference immediately after pushing
+      const fileIndex = files.value.length - 1;
 
       const formData = new FormData();
       formData.append('file', file, encodeURIComponent(file.name));
+      
       try {
+        activeDownloadOrUpload.value = true;
         const response = await cloudStore.uploadFiles(formData, dir.value, (percentCompleted) => {
-          if (fileInProgress) {
-            fileInProgress.progress = Math.round(percentCompleted);
-            activeDownloadOrUpload.value = true;
-            if (percentCompleted === 100) {
-              fileInProgress.uploading = false;
-              activeDownloadOrUpload.value = false;
-            }
+          if (files.value[fileIndex]) {
+            files.value[fileIndex].progress = Math.round(percentCompleted);
           }
         });
+        
+        if (files.value[fileIndex]) {
+          files.value[fileIndex].uploading = false;
+        }
+        
         if (response) {
           toast.add({ severity: 'success', summary: file.name + ' hochgeladen!', detail: 'Die Datei ' + file.name + ' wurde hochgeladen!', life: 3000 });
         }
       } catch (error: any) {
+        if (files.value[fileIndex]) {
+          files.value[fileIndex].uploading = false;
+        }
         checkError(error);
       }
-    });
+    }
+    
+    activeDownloadOrUpload.value = false;
   } else {
     console.error('FileUpload-Instanz ist nicht verfügbar');
   }
@@ -302,6 +372,7 @@ const getFiles = async (dir: string) => {
     if (files.value.length === 0) {
       toast.add({ severity: 'info', summary: 'Ordner ist leer', detail: 'Keine Dateien in diesem Ordner!', life: 5000 });
     }
+    await refreshSharedPaths();
   } catch (error: any) {
     checkError(error);
   }

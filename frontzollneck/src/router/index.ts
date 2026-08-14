@@ -15,6 +15,7 @@ import Ark from '@/components/Ark/ArkPage.vue'
 import PortfolioPage from '@/components/HomePages/PortfolioPage.vue';
 import Poker from '@/components/Poker/PokerPage.vue';
 import passwordGeneratorPage from '../components/PasswordGenerator/passwordGenerator.vue';
+import SharedLinkPage from '@/components/Files/SharedLinkPage.vue';
 
 
 const router = createRouter({
@@ -78,6 +79,12 @@ const router = createRouter({
       name: 'f0a9f6ba-1d06-4678-b6af-89df03618e66',
       component: SecretPageVue,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/apps/cloud/:id([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})',
+      name: 'sharedLink',
+      component: SharedLinkPage,
+      meta: { requiresAuth: false }
     },
     {
       path: '/apps/cloud/:subPath(.*)?',
