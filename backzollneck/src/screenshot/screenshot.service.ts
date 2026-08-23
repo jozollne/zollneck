@@ -7,8 +7,7 @@ const sharp = require('sharp');
 
 @Injectable()
 export class ScreenshotService {
-    private screenshotDir = path.join(__dirname, '../../../takenShots'); // Pfad aus der Konfiguration laden
-
+    private screenshotDir = '/media/takenShots';
     async captureScreenshot(
         url: string,
         format: 'png' | 'jpeg',
@@ -53,8 +52,13 @@ export class ScreenshotService {
         const filePath = path.join(this.screenshotDir, fileName);
 
         // 6. Screenshot erstellen und speichern
-        await page.screenshot({ path: filePath, type: format });
-        await browser.close();
+        try {
+            await page.screenshot({ path: filePath, type: format });
+        } catch (err) {
+            console.error("Fehler beim Speichern des Screenshots:", err);
+            await browser.close();
+            throw new HttpException(`Speichern fehlgeschlagen: ${err.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
         // 7. Wasserzeichen hinzufügen (falls notwendig)
         if (watermarkText) {
