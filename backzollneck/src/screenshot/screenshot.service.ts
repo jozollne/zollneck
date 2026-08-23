@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
-import * as moment from 'moment';
+import moment from 'moment';
 import * as fs from 'fs';
 const sharp = require('sharp');
 
@@ -52,13 +52,8 @@ export class ScreenshotService {
         const filePath = path.join(this.screenshotDir, fileName);
 
         // 6. Screenshot erstellen und speichern
-        try {
-            await page.screenshot({ path: filePath, type: format });
-        } catch (err) {
-            console.error("Fehler beim Speichern des Screenshots:", err);
-            await browser.close();
-            throw new HttpException(`Speichern fehlgeschlagen: ${err.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        await page.screenshot({ path: filePath, type: format });
+        await browser.close();
 
         // 7. Wasserzeichen hinzufügen (falls notwendig)
         if (watermarkText) {
