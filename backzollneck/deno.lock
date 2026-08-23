@@ -1,0 +1,83 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@deno/installer-shell-setup@*": "0.3.4"
+  },
+  "jsr": {
+    "@deno/installer-shell-setup@0.3.4": {
+      "integrity": "48665d1a737d487cce6874bc97bba70a5aeffa7053aca3f60df93c6fab8963b4"
+    }
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@maxmind/geoip2-node@^6.1.0",
+        "npm:@nestjs/cli@^11.0.16",
+        "npm:@nestjs/common@^11.1.29",
+        "npm:@nestjs/core@^11.1.29",
+        "npm:@nestjs/jwt@11",
+        "npm:@nestjs/mapped-types@^2.0.5",
+        "npm:@nestjs/passport@11",
+        "npm:@nestjs/platform-express@^11.1.29",
+        "npm:@nestjs/platform-socket.io@^11.1.29",
+        "npm:@nestjs/schematics@10",
+        "npm:@nestjs/testing@^11.1.29",
+        "npm:@nestjs/typeorm@^11.0.3",
+        "npm:@nestjs/websockets@^11.1.29",
+        "npm:@types/express@^4.17.17",
+        "npm:@types/jest@^29.5.2",
+        "npm:@types/moment@^2.11.29",
+        "npm:@types/multer@^1.4.11",
+        "npm:@types/node@^20.3.1",
+        "npm:@types/puppeteer@^5.4.7",
+        "npm:@types/supertest@^2.0.12",
+        "npm:@types/uuid@10",
+        "npm:@typescript-eslint/eslint-plugin@6",
+        "npm:@typescript-eslint/parser@6",
+        "npm:archiver@^7.0.1",
+        "npm:bcrypt@6",
+        "npm:class-transformer@~0.5.1",
+        "npm:class-validator@0.14",
+        "npm:dotenv@^16.3.1",
+        "npm:eslint-config-prettier@9",
+        "npm:eslint-plugin-prettier@5",
+        "npm:eslint@^8.42.0",
+        "npm:express-rate-limit@^7.1.5",
+        "npm:fluent-ffmpeg@^2.1.3",
+        "npm:glob@^13.0.1",
+        "npm:helmet@^7.1.0",
+        "npm:jest@^29.5.0",
+        "npm:moment@^2.30.1",
+        "npm:multer@^2.0.2",
+        "npm:nest-winston@^1.9.4",
+        "npm:passport-jwt@^4.0.1",
+        "npm:passport@0.7",
+        "npm:pg@^8.11.3",
+        "npm:prettier@3",
+        "npm:puppeteer@^25.7.0",
+        "npm:rcon-client@^4.2.5",
+        "npm:reflect-metadata@~0.1.13",
+        "npm:rxjs@^7.8.1",
+        "npm:sharp@~0.35.3",
+        "npm:socket.io@^4.7.4",
+        "npm:source-map-support@~0.5.21",
+        "npm:supertest@^6.3.3",
+        "npm:tmp@~0.2.5",
+        "npm:ts-jest@^29.1.0",
+        "npm:ts-loader@^9.4.3",
+        "npm:ts-node@^10.9.1",
+        "npm:tsconfig-paths@^4.2.0",
+        "npm:typeorm@~0.3.17",
+        "npm:typescript@^5.1.3",
+        "npm:undici@^7.10.0",
+        "npm:uuid@^14.0.1",
+        "npm:webpack@^5.105.0",
+        "npm:winston@^3.11.0"
+      ],
+      "overrides": {
+        "ajv": "^8.17.2",
+        "picomatch": "^4.0.4"
+      }
+    }
+  }
+}
